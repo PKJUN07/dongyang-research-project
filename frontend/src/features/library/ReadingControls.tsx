@@ -1,18 +1,11 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { request } from '../../api/client';
 import type { ReadingState } from '../../api/client';
+import { useReadingMutation, useReadingState } from './useReading';
+
+/** 목록 카드용 한 줄 읽기·보관 조작. 상세 화면은 DocumentActions(세로 버튼 목록)를 쓴다. */
 export function ReadingControls({ documentId }: { documentId: number }) {
-  const cache = useQueryClient();
-  const state = useQuery({ queryKey: ['reading', documentId], queryFn: ({ signal }) => request<ReadingState>(`/documents/${documentId}/reading`, undefined, signal), retry: false });
-  const update = useMutation({
-    mutationFn: (patch: Partial<ReadingState>) => request<ReadingState>(`/documents/${documentId}/reading`, patch, undefined, 'PATCH'),
-    onSuccess: async data => {
-      await cache.cancelQueries({ queryKey: ['reading', documentId] });
-      cache.setQueryData(['reading', documentId], data);
-      await Promise.all(['saved-documents', 'document', 'stats'].map(key => cache.invalidateQueries({ queryKey: [key] })));
-    }, retry: false,
-  });
-  if (!state.data) return <p role="status">{state.isError ? '읽기 상태 조회 실패' : '읽기 상태 조회 중'}{state.isError && <button onClick={() => { void state.refetch(); }}>다시 조회</button>}</p>;
+  const state = useReadingState(documentId);
+  const update = useReadingMutation(documentId);
+  if (!state.data) return <p role="status">{state.isError ? '읽기 상태 조회 실패' : '읽기 상태 조회 중'}{state.isError && <button className="button-secondary" onClick={() => { void state.refetch(); }}>다시 조회</button>}</p>;
   const reading = state.data;
   return <section className="reading-section" aria-label="읽기와 보관 설정">
     <div className="reading-controls">

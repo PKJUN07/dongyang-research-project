@@ -1,0 +1,106 @@
+/* 검색·수집 화면(/search) 전용 스타일. 접두사 search- */
+.search-page { display: grid; gap: 20px; }
+.search-page .page-header { margin-bottom: 0; }
+
+/* 검색 폼 카드 */
+.search-form label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 700; }
+.search-form .search-controls input { font-size: 15px; }
+.search-form-error { margin: 8px 0 0; color: var(--red-text); font-size: 13.5px; overflow-wrap: anywhere; }
+.search-form-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 16px 20px; margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line); }
+.search-form-grid > * { min-width: 0; }
+.search-form-grid .state-card { padding: 20px 16px; box-shadow: none; }
+.search-config { display: grid; gap: 10px; align-content: start; }
+.search-config .notice { margin: 0; }
+.search-config-link { margin: 0; }
+
+/* TopicPanel(검색 화면 안에서의 시각) */
+.search-topic-panel { margin: 0; }
+.search-topic-panel > label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 700; }
+.search-topic-panel select { width: 100%; }
+.search-topic-create { margin-top: 10px; }
+.search-topic-create summary { display: flex; align-items: center; min-height: 40px; cursor: pointer; color: var(--primary-text); font-size: 13.5px; font-weight: 700; }
+.search-topic-create .topic-create { display: grid; gap: 8px; margin-top: 6px; padding: 14px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-sub); }
+.search-topic-create .topic-create label { margin: 0; font-size: 13px; font-weight: 700; }
+.search-topic-create .topic-create input { width: 100%; }
+.search-topic-create .topic-create button { justify-self: start; }
+.search-topic-panel p[role="alert"] { margin: 4px 0 0; color: var(--red-text); font-size: 13px; }
+
+/* 상태 갱신 실패 배너 */
+.search-refresh-error { margin: 0; }
+
+/* 검색 세션: 왼쪽 본문 + 오른쪽 KPI·기록·안내 */
+.search-run-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; }
+.search-run-main, .search-run-side { display: grid; gap: 16px; align-content: start; min-width: 0; }
+.search-session-card .card-tags { margin-bottom: 12px; }
+.search-session-title { margin: 0; font-size: 22px; font-weight: 800; line-height: 1.35; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+.search-session-desc { margin: 6px 0 0; color: var(--text-sub); font-size: 14px; overflow-wrap: anywhere; }
+.search-session-status { margin: 10px 0 6px; color: var(--text-muted); font-size: 13px; overflow-wrap: anywhere; }
+.search-session-status strong { color: var(--text); }
+.search-session-card .step-list { margin-top: 6px; }
+
+.search-kpis { display: grid; gap: 8px; }
+.search-kpi-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.search-kpi-note { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 0; color: var(--text-muted); font-size: 12.5px; line-height: 1.6; }
+.search-kpi-retry { min-height: 40px; padding: 0 10px; color: var(--primary-text); font-size: 12.5px; font-weight: 700; }
+
+.search-log-note { margin: -6px 0 12px; color: var(--text-muted); font-size: 12px; line-height: 1.6; }
+
+.search-results-card .card-header { flex-wrap: wrap; }
+.search-results-wait { margin: 0 0 12px; }
+.search-skeletons { display: grid; gap: 12px; }
+.search-failed { margin: 0; }
+.search-zero { margin: 0 0 8px; font-size: 14px; }
+/* DocumentsPanel(E 소유)은 감싸기만 하고 간격만 맞춘다. */
+.search-documents .document-filters { margin-bottom: 12px; }
+.search-documents .results-toolbar { margin-top: 4px; }
+.search-documents .pagination { margin-bottom: 4px; }
+
+/* 검색 전 */
+.search-empty-layout .state-card { padding: 40px 24px; }
+.search-recent-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.search-recent-link { display: grid; gap: 4px; min-height: 44px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); color: var(--text); text-decoration: none; }
+.search-recent-link:hover { border-color: #b9a9f3; background: #fbfaff; }
+.search-recent-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.search-recent-top strong { min-width: 0; font-size: 14px; overflow-wrap: anywhere; }
+.search-recent-meta { color: var(--text-muted); font-size: 12px; overflow-wrap: anywhere; }
+.search-recent-error p { margin: 0 0 10px; color: var(--red-text); font-size: 13px; overflow-wrap: anywhere; }
+.search-recent-card .form-help { margin-top: 10px; }
+
+/* runId가 있을 때: 한 줄 컴팩트 검색 바 + 접힌 주제·설정 */
+.search-form-compact { padding: 12px 16px; }
+.search-compact-row { display: flex; align-items: center; gap: 10px; }
+.search-compact-row input { flex: 1; min-width: 0; padding: 10px 14px; }
+.search-compact-topic { flex: 0 1 auto; max-width: 260px; color: var(--text-muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.search-compact-topic strong { color: var(--text-sub); }
+.search-compact-row button { flex: none; }
+.search-settings { margin-top: 6px; }
+.search-settings > summary { display: flex; align-items: center; min-height: 40px; cursor: pointer; color: var(--primary-text); font-size: 13px; font-weight: 700; overflow-wrap: anywhere; }
+.search-settings .search-form-grid { margin-top: 8px; padding-top: 14px; }
+
+/* 세션 카드 포커스(제출 직후 이동) */
+.search-session-card { scroll-margin-top: 16px; }
+.search-session-card:focus { outline: none; }
+.search-session-card:focus-visible, .search-session-card:focus { box-shadow: 0 0 0 3px var(--primary-soft), var(--shadow); border-color: #b9a9f3; }
+.search-error-info { margin-top: 10px; color: var(--text-muted); font-size: 12.5px; }
+.search-error-info summary { display: flex; align-items: center; min-height: 40px; cursor: pointer; }
+.search-error-info p { margin: 0; overflow-wrap: anywhere; }
+
+@media (max-width: 1100px) {
+  .search-run-layout { grid-template-columns: minmax(0, 1fr) 280px; }
+}
+@media (max-width: 760px) {
+  .search-form-grid { grid-template-columns: minmax(0, 1fr); }
+  .search-compact-row { flex-wrap: wrap; }
+  .search-compact-row input { flex: 1 1 100%; }
+  .search-compact-topic { flex: 1 1 auto; max-width: none; white-space: normal; }
+  .search-session-title { font-size: 19px; }
+  /* 한 열에서는 세션 → KPI → 안내 → 원문 자료 → 수집 기록 순으로 보인다. */
+  .search-run-layout { display: flex; flex-direction: column; align-items: stretch; gap: 16px; }
+  .search-run-main, .search-run-side { display: contents; }
+  .search-session-card { order: 1; }
+  .search-kpis { order: 2; }
+  .search-run-side .notice-card { order: 3; }
+  .search-results-card { order: 4; }
+  .search-log-card { order: 5; }
+  .search-kpi-grid { gap: 10px; }
+}

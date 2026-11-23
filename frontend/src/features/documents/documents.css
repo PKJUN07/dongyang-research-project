@@ -1,0 +1,16 @@
+/* ===== 전체 수집 자료 / 검색 결과 목록 (DocumentsPanel) ===== */
+.saved-documents .result-list { display: grid; gap: 12px; }
+.saved-documents .results-toolbar { padding: 0 2px; }
+.saved-documents .result-domain { margin: 0; color: var(--text-muted); font-size: 12.5px; overflow-wrap: anywhere; }
+.saved-documents .source-details { margin-top: 8px; color: var(--text-muted); font-size: 13px; }
+.saved-documents .source-details summary { min-height: 32px; cursor: pointer; }
+.saved-documents > .form-help { margin: 0 0 4px; }
+.docs-inline-alert { margin: 0 0 12px; padding: 10px 12px; border-left: 3px solid var(--red); border-radius: var(--radius-sm); color: var(--red-text); background: var(--red-soft); font-size: 13px; line-height: 1.7; }
+.docs-inline-alert button { min-height: 40px; margin-left: 6px; padding: 6px 12px; font-size: 13px; }
+.docs-empty-links { margin: 12px 0 0; text-align: center; }
+.extraction-reason-code { display: inline-block; margin-left: 6px; color: var(--text-muted); font-size: 12px; vertical-align: top; }
+.extraction-reason-code summary { cursor: pointer; }
+.extraction-reason-code code { margin-left: 4px; font-size: 11.5px; overflow-wrap: anywhere; }
+.synthetic-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0; padding: 8px 12px; border-left: 3px solid var(--primary); border-radius: var(--radius-sm); color: #3f3670; background: #f4f1ff; font-size: 13px; line-height: 1.6; }
+.synthetic-line button { min-height: 40px; padding: 6px 12px; font-size: 12.5px; }
+.saved-documents > .synthetic-line { margin-bottom: 10px; }

@@ -1,0 +1,85 @@
+/* 리서치 피드(/feed) 전용 스타일. 클래스는 모두 feed- 접두사. */
+.feed-filter-panel { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px 18px; margin-bottom: 16px; }
+.feed-field { display: grid; gap: 6px; min-width: 0; flex: 1 1 200px; font-size: 13px; font-weight: 700; color: var(--text-sub); }
+.feed-field select { width: 100%; }
+.feed-field-help { color: var(--text-muted); font-size: 12.5px; font-weight: 400; }
+.feed-check { display: inline-flex; align-items: center; gap: 8px; min-height: 42px; font-size: 13.5px; font-weight: 600; }
+.feed-check input { width: 18px; height: 18px; margin: 0; }
+.feed-active-filters { margin: -8px 0 16px; color: var(--text-muted); font-size: 12.5px; overflow-wrap: anywhere; }
+
+/* AI 주제 브리프 */
+.feed-brief { display: grid; gap: 14px; min-width: 0; padding: 20px; border: 1px solid #d9cffb; border-radius: var(--radius); background: linear-gradient(180deg, #f6f2ff 0%, #fbfaff 100%); box-shadow: var(--shadow); }
+.feed-brief-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
+.feed-brief-title { margin: 0; color: var(--primary-text); font-size: 16px; font-weight: 800; letter-spacing: -0.02em; }
+.feed-brief-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.feed-brief-badge { display: inline-flex; padding: 3px 10px; border: 1px solid #d6ccfb; border-radius: 999px; color: var(--primary-text); background: var(--surface); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.feed-brief-intro { margin: 0; color: var(--text-sub); font-size: 13.5px; line-height: 1.75; }
+.feed-brief-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.feed-brief-entry { display: grid; gap: 6px; align-content: start; min-width: 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface); }
+.feed-brief-entry-head { display: flex; align-items: center; gap: 6px; }
+.feed-brief-number { color: var(--primary-text); font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.feed-brief-entry-title { color: var(--text); font-size: 14px; font-weight: 700; line-height: 1.5; text-decoration: none; word-break: keep-all; overflow-wrap: anywhere; }
+.feed-brief-entry-title:hover { color: var(--primary-text); text-decoration: underline; }
+.feed-brief-summary { display: -webkit-box; margin: 0; overflow: hidden; color: var(--text-sub); font-size: 13px; line-height: 1.7; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; }
+.feed-brief-meta { color: var(--text-muted); font-size: 12px; }
+.feed-brief-empty { display: grid; justify-items: start; gap: 6px; }
+.feed-brief-empty p { margin: 0; color: var(--text-sub); font-size: 13.5px; line-height: 1.7; }
+.feed-brief-empty .button-link-secondary { margin-top: 6px; }
+.feed-brief-links { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+.feed-brief-links .text-link { display: inline-flex; align-items: center; min-height: 40px; font-size: 13px; }
+.feed-ai-mark { display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 6px; color: var(--primary-text); background: var(--primary-soft); font-size: 11.5px; font-weight: 800; white-space: nowrap; }
+
+/* 피드 목록 */
+.feed-list { display: grid; gap: 4px; }
+.feed-list > .chip-tabs { padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.feed-items { display: grid; }
+.feed-items[aria-busy=true] { opacity: .7; }
+.feed-item { display: grid; gap: 6px; min-width: 0; padding: 18px 0; border-bottom: 1px solid var(--line); }
+.feed-item:last-child { border-bottom: 0; }
+.feed-item-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.feed-item-top .card-tags { min-width: 0; }
+.feed-item-toggles { display: flex; flex: none; gap: 6px; }
+.feed-item-title { margin: 2px 0 0; font-size: 16.5px; line-height: 1.5; letter-spacing: -0.02em; word-break: keep-all; overflow-wrap: anywhere; }
+.feed-item-title a { color: var(--text); text-decoration: none; }
+.feed-item-title a:hover { color: var(--primary-text); text-decoration: underline; }
+.feed-item-snippet { display: -webkit-box; margin: 0; overflow: hidden; color: var(--text-sub); font-size: 13.5px; line-height: 1.75; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
+.feed-item-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 14px; margin: 0; color: var(--text-muted); font-size: 12.5px; overflow-wrap: anywhere; }
+.feed-item-meta > span { min-width: 0; }
+.feed-item-origin { display: inline-flex; align-items: center; min-height: 32px; color: var(--primary-text); font-weight: 700; text-decoration: none; }
+.feed-item-origin:hover { text-decoration: underline; }
+.feed-item-flags { color: var(--primary-text); font-weight: 600; }
+.feed-item-feedback { margin: 0; color: var(--green-text); font-size: 12.5px; }
+.feed-item-feedback:empty { display: none; }
+.feed-ai-line { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 4px; padding: 8px 12px; border-radius: var(--radius-sm); color: var(--text-sub); background: var(--surface-sub); font-size: 13px; }
+.feed-ai-line-ready { background: #f6f3ff; color: var(--text); }
+.feed-ai-link { display: inline-flex; align-items: center; min-height: 32px; margin-left: auto; color: var(--primary-text); font-size: 12.5px; font-weight: 700; text-decoration: none; }
+.feed-ai-link:hover { text-decoration: underline; }
+.feed-list-note { margin: 12px 0 0; color: var(--text-muted); font-size: 12.5px; }
+.feed-empty { border: 0; box-shadow: none; }
+.feed-list .skeleton { margin-top: 12px; }
+
+/* 인라인 경고(재조회 실패 등) */
+.feed-inline-alert { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 10px 0 0; padding: 10px 14px; border-left: 3px solid var(--red); border-radius: var(--radius-sm); color: var(--red-text); background: var(--red-soft); font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+.feed-inline-alert .button-secondary { min-height: 40px; padding: 6px 12px; font-size: 13px; }
+
+.feed-inline-note { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 0 0 8px; padding: 8px 12px; border-radius: var(--radius-sm); color: var(--orange-text); background: var(--warning-bg); font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+.feed-inline-note .button-secondary { min-height: 40px; padding: 6px 12px; font-size: 13px; }
+.feed-brief .feed-inline-note { margin: 0; }
+
+/* 오른쪽 요약 */
+.feed-aside-body { display: grid; gap: 12px; }
+.feed-aside-body > .text-link { display: inline-flex; align-items: center; min-height: 40px; font-size: 13px; }
+.feed-aside-run { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 0; color: var(--text-muted); font-size: 12.5px; }
+.feed-aside-topic { color: var(--text); font-weight: 700; overflow-wrap: anywhere; }
+.feed-aside-tiles .stat-tile { padding: 12px 14px; background: var(--surface-sub); box-shadow: none; }
+.feed-aside-progress { display: grid; gap: 6px; }
+.feed-aside-note { margin: 0; color: var(--text-muted); font-size: 12px; line-height: 1.6; }
+.feed-aside-empty { margin: 0; color: var(--text-sub); font-size: 13px; line-height: 1.7; }
+.feed-page .notice-body p { margin: 0; }
+
+@media (max-width: 760px) {
+  .feed-brief { padding: 16px; }
+  .feed-brief-list { grid-template-columns: minmax(0, 1fr); }
+  .feed-item-title { font-size: 15.5px; }
+  .feed-ai-link { margin-left: 0; }
+}

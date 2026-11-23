@@ -1,4 +1,5 @@
 import {useMutation,useQuery,useQueryClient} from '@tanstack/react-query';
+import { ExtractionReasonText } from './ExtractionReasonText';
 import {request} from '../../api/client';
 import {useRef} from 'react';
 export function BodyFetchPanel({id,available,characters=0}:{id:number;available:boolean;characters?:number}){
@@ -15,7 +16,7 @@ export function BodyFetchPanel({id,available,characters=0}:{id:number;available:
  {fetchBody.isError&&<p role="alert">본문을 가져오지 못했습니다. {fetchBody.error.message}</p>}
  {fetchBody.data&&!['SUCCESS','EXISTS'].includes(fetchBody.data.status)&&<div role="alert">
   <p>{fetchBody.data.status === 'BLOCKED' ? '이 페이지의 본문 접근이 제한되었습니다. 원문 링크를 이용하세요.' : fetchBody.data.status === 'FAILED' ? '본문 추출에 실패했습니다. 다시 가져오거나 원문 링크를 이용하세요.' : '페이지에서 읽을 수 있는 본문을 찾지 못했습니다. 원문 링크를 이용하세요.'}</p>
-  {fetchBody.data.reason && <details><summary>본문 수집 오류 정보</summary><p>{fetchBody.data.reason}</p></details>}
+  {fetchBody.data.reason && <p className="form-help"><ExtractionReasonText reason={fetchBody.data.reason} /></p>}
  </div>}
  </div>;
 }

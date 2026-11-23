@@ -54,3 +54,6 @@ export function safeLink(url: string) {
   try { const parsed = new URL(url); return ['http:', 'https:'].includes(parsed.protocol) && !parsed.username && !parsed.password; }
   catch { return false; }
 }
+export type SourceType = DocumentResult['sourceType'];
+export type ReadingStatus = DocumentResult['readingStatus'];
+export type RunStatus = Run['status'];

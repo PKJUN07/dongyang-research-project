@@ -4,6 +4,7 @@ import SearchPage from "../features/search/SearchPage";
 import LibraryPage from "../features/library/LibraryPage";
 import { lazy, Suspense } from 'react';
 const StatsPage = lazy(() => import('../features/stats/StatsPage'));
+const FeedPage = lazy(() => import('../features/feed/FeedPage'));
 import DocumentDetailPage from "../features/documents/DocumentDetailPage";
 import DocumentsPage from "../features/documents/DocumentsPage";
 import BriefPage from '../features/documents/BriefPage';
@@ -16,6 +17,7 @@ export default function AppRouter() {
         <Route index element={<Navigate to="/search" replace />} />
 
         <Route path="/search" element={<SearchPage />} />
+        <Route path="/feed" element={<Suspense fallback={<p role="status">리서치 피드를 준비하고 있습니다…</p>}><FeedPage /></Suspense>} />
         <Route path="/library" element={<LibraryPage />} />
         <Route path="/stats" element={<Suspense fallback={<p role="status">통계 화면을 준비하고 있습니다…</p>}><StatsPage /></Suspense>} />
 

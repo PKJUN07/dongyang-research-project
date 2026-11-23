@@ -1,10 +1,81 @@
 # ResearchBoard
 
-관심 키워드로 찾은 자료의 출처를 확인하고 보관·읽음·메모·통계로 다시 찾아보는 개인용 로컬 웹앱입니다.
+관심 주제와 검색어를 입력하면 Java 백엔드가 웹 자료를 수집·저장합니다. 그 다음 로컬 LLM(Ollama)이 자료별로 근거가 연결된 요약을 만듭니다. 이렇게 모은 자료를 보관·읽음·메모·통계로 다시 찾아보는 개인용 로컬 웹앱입니다.
 
-- [설치·실행·종료 안내](docs/week9-runbook.md)
-- [현재 진행도: 9주차](docs/week9-progress.md)
-- [통합 검증 결과](docs/week9-verification.md)
-- [사용자 미리보기](http://127.0.0.1:5178/search)
+- 프론트엔드: React + Vite + TypeScript (`frontend/`)
+- 백엔드: Spring Boot + SQLite (`backend/`)
+- AI: 로컬 Ollama. 외부 유료 AI로 데이터를 보내지 않습니다.
 
-2026-11-09 기준1~9주차 완료. 실제 검색은 기존 승인2회만 수행했으며 이번 주 추가 호출0회입니다. 기본 모드는 합성 테스트이며 AI는10주차 이후 계획입니다. 미리보기 기록은 별도 preview DB에 저장됩니다.
+## 주요 화면
+
+| 메뉴 | 경로 | 기능 |
+|---|---|---|
+| 검색·수집 | `/search` | 관심 주제 선택·생성, 새 검색. 검색 세션의 처리 단계, 발견·신규·기존·중복 건수, 수집 기록, 결과 목록 |
+| 리서치 피드 | `/feed` | 출처 유형별 탭(공식/사용자/기타/읽지 않음). 나중에 읽기·즐겨찾기 토글, 자료별 AI 분석 요약, AI 주제 브리프(자료 요약 모음) |
+| 주제 분석 | `/stats` | 기간·주제별 검색 횟수, 원시 수집, 신규, 중복, 읽음 비율. 일별 자료 흐름 차트, 자료 유형 비율, 출처·AI 상태, 검색 이력 |
+| 읽기 보관함 | `/library` | 주제별 보관 카드, 읽지 않음·나중에 읽기·즐겨찾기 필터, 정렬, 보관 해제 |
+| 자료 상세 | `/documents/:id` | 검색 요약·공개 본문, AI 구조화 요약(핵심 주장·직접 근거·한계·추론 경계), 읽기·보관·주제 연결, 메모 |
+| (보조) | `/documents`, `/brief` | 전체 수집 자료 목록, 분석 완료 자료를 최대 5개까지 묶는 자료 요약 모음 |
+
+- 기본 검색 모드는 합성 테스트(`fake`)입니다. 외부 검색 호출 없이 합성 결과만 만듭니다.
+- 합성 자료는 목록에서 기본으로 숨겨집니다. 화면의 "테스트 자료 포함"으로 볼 수 있습니다.
+- Ollama가 꺼져 있어도 검색·원문·보관·메모는 그대로 쓸 수 있습니다.
+
+## 실행 방법 (Windows)
+
+### 준비물
+- JDK 21 이상. 예: `winget install EclipseAdoptium.Temurin.21.JDK`
+- Node.js 22 이상 또는 Python 3. Python은 npm 없이 빌드 결과를 띄울 때 씁니다.
+- Ollama와 모델 1개. 개발 PC(VRAM 12GB)에서는 `qwen3-vl:8b-instruct`로 검증했습니다.
+
+### 1. 백엔드 (포트 18089)
+```powershell
+# Java가 PATH에 없을 때만 실행
+$jdk = (Get-ChildItem 'C:\Program Files\Eclipse Adoptium','C:\Program Files\Java' -Directory -Filter 'jdk-2*' -ErrorAction SilentlyContinue | Sort-Object Name -Descending | Select-Object -First 1).FullName
+$env:JAVA_HOME = $jdk; $env:Path = "$jdk\bin;$env:Path"
+
+cd backend
+$env:RESEARCH_PROVIDER = 'fake'
+$env:EXTERNAL_SEARCH_APPROVED = 'false'
+$env:RESEARCH_DB_PATH = "$PWD\..\runtime\research.db"
+.\mvnw.cmd spring-boot:run "-Dspring-boot.run.arguments=--server.port=18089 --research.ai-model=qwen3-vl:8b-instruct --research.ai-timeout-seconds=300"
+```
+`Tomcat started on port 18089`가 보이면 준비된 것입니다. 상태 확인 주소: http://127.0.0.1:18089/api/health
+
+### 2. 프론트엔드 (포트 5179)
+**방법 A: npm 개발 서버**
+```powershell
+cd frontend
+npm.cmd ci
+$env:RESEARCH_API_TARGET = 'http://127.0.0.1:18089'
+npm.cmd run dev -- --host 127.0.0.1 --port 5179 --strictPort
+```
+PowerShell에서는 `npm` 대신 `npm.cmd`를 쓰세요. 실행 정책 때문에 `npm.ps1`이 막힐 수 있습니다.
+
+**방법 B: npm 없이 빌드 결과 실행** (`frontend/dist`가 있을 때)
+```powershell
+python runtime\serve_frontend.py 5179 http://127.0.0.1:18089
+```
+
+브라우저에서 http://127.0.0.1:5179/search 를 엽니다.
+
+### 3. 로컬 AI (Ollama)
+Ollama가 실행 중이어야 AI 요약을 쓸 수 있습니다. WSL에 설치했다면 다음으로 켭니다.
+```powershell
+wsl -e ollama serve
+```
+`address already in use` 오류가 나오면 이미 실행 중이라는 뜻입니다. 백엔드를 재시작하지 않아도 연결 상태가 자동으로 다시 확인됩니다.
+
+### 실제 웹 검색 (선택)
+실제 검색은 Serper API 키, 승인 설정, 누적 호출 상한이 필요합니다. 자세한 내용은 [backend/README.md](backend/README.md)와 [실행 안내](docs/week9-runbook.md)를 참고하세요.
+
+## 빌드·검사
+```powershell
+cd frontend; npm.cmd run build; npm.cmd run lint
+cd ..\backend; .\mvnw.cmd test
+```
+
+## 참고 문서
+- 화면 참고 이미지: [docs/img](docs/img)
+- 구현 설계서: `docs/2026-09-14_리서치보드_화면컴포넌트_API_구현설계서.docx`
+- 10~12주차 구현·검증: [docs/week10-12-verification.md](docs/week10-12-verification.md)
