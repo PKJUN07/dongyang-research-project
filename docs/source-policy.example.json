@@ -1,0 +1,12 @@
+[
+  {
+    "host": "example.com",
+    "pathPrefix": "/approved",
+    "sourceType": "OTHER",
+    "owner": "교체 필요 - 실제 운영 주체 확인 전",
+    "evidenceUrl": "https://example.com/about",
+    "reviewedAt": "2026-10-16",
+    "fetchAllowed": false,
+    "permissionNote": "형식 예제입니다. robots.txt, 이용 조건, 본문 저장 및 처리 허용 범위 검토 후 교체하세요."
+  }
+]

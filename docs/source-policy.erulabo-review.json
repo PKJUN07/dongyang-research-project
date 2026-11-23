@@ -1,0 +1,12 @@
+[
+  {
+    "host": "erulabo.com",
+    "pathPrefix": "/384",
+    "sourceType": "USER",
+    "owner": "에루라보 개인 블로그 에루샤의 게임 플레이 가이드 (제작사 공식 문서 아님)",
+    "evidenceUrl": "https://erulabo.com/384",
+    "reviewedAt": "2026-11-10",
+    "fetchAllowed": true,
+    "permissionNote": "사용자가 지정한 단일 공개 글의 로컬 열람·요약 검증 범위. 로그인 없이 본문이 공개되어 있고 robots.txt의 User-agent:*는 해당 경로 Allow:/이다. ResearchBoard의 기존 식별 UA를 유지하며 다른 봇으로 위장하지 않는다. GPTBot 등 특정 봇에는 별도 차단이 있음을 기록한다. robots 허용을 저작권 사용허락으로 주장하지 않으며 사이트 전체 수집·재배포·접근제한 우회로 확대하지 않는다."
+  }
+]

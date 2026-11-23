@@ -1,0 +1,13 @@
+# Runtime data, credentials and local evidence must not be published.
+/backend/data/
+/backend/target/
+/frontend/node_modules/
+/frontend/dist/
+/output/
+*.db
+*.db-shm
+*.db-wal
+*.log
+.env
+.env.*
+!.env.example
