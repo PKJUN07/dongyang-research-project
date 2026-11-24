@@ -23,12 +23,16 @@
 
 ## 실행 방법 (Windows)
 
+프로젝트 폴더에서 **[Start-ResearchBoard.bat](Start-ResearchBoard.bat)** 를 더블클릭하세요. Ollama(Windows 또는 기본 WSL 배포판), 백엔드, 프론트엔드를 준비하고 검색 화면을 기본 브라우저에서 엽니다. 이미 실행 중인 서비스는 재사용합니다. 사용을 마치면 실행 창에서 **Enter**를 눌러 이 창에서 시작한 서비스를 종료하세요.
+
+첫 실행에는 아래 준비물이 필요합니다. 프론트엔드는 설치된 Vite를 사용합니다. Vite가 없고 빌드 결과와 Python이 있으면 바로 실행하며, 그 외에는 `npm ci`로 패키지를 설치합니다. 기본 DB는 `runtime/research.db`이고, 다른 DB나 AI 모델은 `RESEARCH_DB_PATH`, `RESEARCH_AI_MODEL` 환경변수로 지정할 수 있습니다. 시작 오류의 상세 로그는 `runtime` 폴더에 저장됩니다.
+
 ### 준비물
 - JDK 21 이상. 예: `winget install EclipseAdoptium.Temurin.21.JDK`
-- Node.js 22 이상 또는 Python 3. Python은 npm 없이 빌드 결과를 띄울 때 씁니다.
+- Node.js 22.12 이상 또는 Python 3. Python은 npm 없이 빌드 결과를 띄울 때 씁니다.
 - Ollama와 모델 1개. 개발 PC(VRAM 12GB)에서는 `qwen3-vl:8b-instruct`로 검증했습니다.
 
-### 1. 백엔드 (포트 18089)
+### 수동 실행 1. 백엔드 (포트 18089)
 ```powershell
 # Java가 PATH에 없을 때만 실행
 $jdk = (Get-ChildItem 'C:\Program Files\Eclipse Adoptium','C:\Program Files\Java' -Directory -Filter 'jdk-2*' -ErrorAction SilentlyContinue | Sort-Object Name -Descending | Select-Object -First 1).FullName
@@ -42,7 +46,7 @@ $env:RESEARCH_DB_PATH = "$PWD\..\runtime\research.db"
 ```
 `Tomcat started on port 18089`가 보이면 준비된 것입니다. 상태 확인 주소: http://127.0.0.1:18089/api/health
 
-### 2. 프론트엔드 (포트 5179)
+### 수동 실행 2. 프론트엔드 (포트 5179)
 **방법 A: npm 개발 서버**
 ```powershell
 cd frontend
@@ -59,7 +63,7 @@ python runtime\serve_frontend.py 5179 http://127.0.0.1:18089
 
 브라우저에서 http://127.0.0.1:5179/search 를 엽니다.
 
-### 3. 로컬 AI (Ollama)
+### 수동 실행 3. 로컬 AI (Ollama)
 Ollama가 실행 중이어야 AI 요약을 쓸 수 있습니다. WSL에 설치했다면 다음으로 켭니다.
 ```powershell
 wsl -e ollama serve
