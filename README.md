@@ -2,6 +2,16 @@
 
 관심 주제와 검색어를 입력하면 Java 백엔드가 웹 자료를 수집·저장합니다. 그 다음 로컬 LLM(Ollama)이 자료별로 근거가 연결된 요약을 만듭니다. 이렇게 모은 자료를 보관·읽음·메모·통계로 다시 찾아보는 개인용 로컬 웹앱입니다.
 
+## Windows에서 바로 실행하기
+
+프로젝트 폴더에서 **`Start-ResearchBoard.bat`를 더블클릭**하세요. 실행기가 Ollama, 백엔드, 프론트엔드를 준비하고 기본 브라우저에서 [검색 화면](http://127.0.0.1:5179/search)을 엽니다. 이미 켜진 서비스는 재사용합니다.
+
+- **처음 실행할 때** GitHub에서 저장소 전체를 내려받으세요. ZIP으로 받았다면 압축을 푼 뒤 배치 파일을 실행하세요. 새로 내려받은 환경에는 JDK 21 이상과 Node.js 22.12 이상이 필요합니다. 첫 실행에는 프로젝트 의존성을 내려받느라 시간이 걸릴 수 있습니다.
+- **AI 요약을 쓸 때** Windows 또는 기본 WSL 배포판에 Ollama와 기본 모델 `qwen3-vl:8b-instruct`를 준비하세요. 다른 모델을 쓰려면 `RESEARCH_AI_MODEL`에 설치한 모델 이름을 지정하세요. Ollama를 사용할 수 없어도 검색·보관·메모는 쓸 수 있습니다.
+- **사용을 마칠 때** 실행 창에서 **Enter**를 누르세요. 이 창이 시작한 서비스가 종료됩니다.
+
+## 구성
+
 - 프론트엔드: React + Vite + TypeScript (`frontend/`)
 - 백엔드: Spring Boot + SQLite (`backend/`)
 - AI: 로컬 Ollama. 외부 유료 AI로 데이터를 보내지 않습니다.
@@ -19,18 +29,17 @@
 
 - 기본 검색 모드는 합성 테스트(`fake`)입니다. 외부 검색 호출 없이 합성 결과만 만듭니다.
 - 합성 자료는 목록에서 기본으로 숨겨집니다. 화면의 "테스트 자료 포함"으로 볼 수 있습니다.
-- Ollama가 꺼져 있어도 검색·원문·보관·메모는 그대로 쓸 수 있습니다.
 
-## 실행 방법 (Windows)
+## 실행 설정과 로그
 
-프로젝트 폴더에서 **[Start-ResearchBoard.bat](Start-ResearchBoard.bat)** 를 더블클릭하세요. Ollama(Windows 또는 기본 WSL 배포판), 백엔드, 프론트엔드를 준비하고 검색 화면을 기본 브라우저에서 엽니다. 이미 실행 중인 서비스는 재사용합니다. 사용을 마치면 실행 창에서 **Enter**를 눌러 이 창에서 시작한 서비스를 종료하세요.
+- 기본 DB는 `runtime/research.db`입니다. 다른 DB를 열려면 실행 전에 `RESEARCH_DB_PATH`에 해당 파일의 절대 경로를 지정하세요.
+- 프론트엔드는 설치된 Vite를 사용합니다. Vite가 없고 `frontend/dist`와 Python 3가 있으면 빌드 결과를 바로 띄웁니다. 그 외에는 `npm ci`로 패키지를 설치합니다.
+- 서비스 시작에 실패하면 실행 창에 표시된 로그 파일을 확인하세요. 실행기가 시작한 서비스의 로그는 `runtime/Backend.log`, `runtime/Frontend.log`, `runtime/Ollama.log`에 기록됩니다.
 
-첫 실행에는 아래 준비물이 필요합니다. 프론트엔드는 설치된 Vite를 사용합니다. Vite가 없고 빌드 결과와 Python이 있으면 바로 실행하며, 그 외에는 `npm ci`로 패키지를 설치합니다. 기본 DB는 `runtime/research.db`이고, 다른 DB나 AI 모델은 `RESEARCH_DB_PATH`, `RESEARCH_AI_MODEL` 환경변수로 지정할 수 있습니다. 시작 오류의 상세 로그는 `runtime` 폴더에 저장됩니다.
+<details>
+<summary>개발용 수동 실행 명령 보기</summary>
 
-### 준비물
-- JDK 21 이상. 예: `winget install EclipseAdoptium.Temurin.21.JDK`
-- Node.js 22.12 이상 또는 Python 3. Python은 npm 없이 빌드 결과를 띄울 때 씁니다.
-- Ollama와 모델 1개. 개발 PC(VRAM 12GB)에서는 `qwen3-vl:8b-instruct`로 검증했습니다.
+JDK 21은 Windows에서 `winget install EclipseAdoptium.Temurin.21.JDK`로 설치할 수 있습니다.
 
 ### 수동 실행 1. 백엔드 (포트 18089)
 ```powershell
@@ -69,6 +78,8 @@ Ollama가 실행 중이어야 AI 요약을 쓸 수 있습니다. WSL에 설치�
 wsl -e ollama serve
 ```
 `address already in use` 오류가 나오면 이미 실행 중이라는 뜻입니다. 백엔드를 재시작하지 않아도 연결 상태가 자동으로 다시 확인됩니다.
+
+</details>
 
 ### 실제 웹 검색 (선택)
 실제 검색은 Serper API 키, 승인 설정, 누적 호출 상한이 필요합니다. 자세한 내용은 [backend/README.md](backend/README.md)와 [실행 안내](docs/week9-runbook.md)를 참고하세요.
