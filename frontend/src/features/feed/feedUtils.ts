@@ -37,11 +37,10 @@ export const runStatusLabel: Record<RunStatus, string> = {
   FAILED: '실패',
 };
 
-/** /documents 조회 조건(합성 제외 포함). 탭별 출처 유형·읽기 상태는 호출부가 덧붙인다. */
-export function baseFilter(topicId: string, includeSynthetic: boolean): Record<string, string> {
+/** /documents 조회 조건. 탭별 출처 유형·읽기 상태는 호출부가 덧붙인다. */
+export function baseFilter(topicId: string): Record<string, string> {
   const filter: Record<string, string> = {};
   if (topicId) filter.topicId = topicId;
-  if (!includeSynthetic) filter.synthetic = 'false';
   return filter;
 }
 
@@ -82,6 +81,7 @@ export function useLastBrief(): LastBrief {
     enabled: briefId !== null,
     queryFn: ({ signal }) => request<Brief>(`/ai/briefs/${briefId}`, undefined, signal),
     retry: false,
+    refetchInterval: q => ['QUEUED', 'RUNNING'].includes(q.state.data?.synthesisStatus ?? '') ? 3000 : false,
   });
   return { briefId, query };
 }

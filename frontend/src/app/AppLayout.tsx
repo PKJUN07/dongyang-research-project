@@ -14,20 +14,17 @@ const navigation = [
   { to: '/library', label: '읽기 보관함', icon: '☰' },
 ];
 
-/** 주제 한 줄: 실제 자료 수(합성 제외) + 합성(테스트) 자료가 있으면 '테스트 n' 병기. 모두 실제 API 개수. */
+/** 주제 한 줄: 수집 자료 수(실제 API 개수). */
 function TopicLink({ topic, active }: { topic: Topic; active: boolean }) {
-  const real = useDocumentCount({ topicId: String(topic.id), synthetic: 'false' });
-  const test = useDocumentCount({ topicId: String(topic.id), synthetic: 'true' });
-  const realText = real.data !== undefined ? `실제 자료 ${real.data}건` : real.isError ? '실제 자료 수 확인 불가' : '실제 자료 수 확인 중';
-  const testText = test.data ? `, 테스트 자료 ${test.data}건` : '';
+  const real = useDocumentCount({ topicId: String(topic.id) });
+  const realText = real.data !== undefined ? `자료 ${real.data}건` : real.isError ? '자료 수 확인 불가' : '자료 수 확인 중';
   return (
     <Link className="topic-link" to={`/stats?topicId=${topic.id}`} aria-current={active ? 'page' : undefined}
-      aria-label={`${topic.name} 주제 분석, ${realText}${testText}`}>
+      aria-label={`${topic.name} 주제 분석, ${realText}`}>
       <span className="topic-dot" style={{ background: topicColor(topic.id) }} aria-hidden="true" />
       <span className="topic-name">{topic.name}</span>
       <span className="topic-count" aria-hidden="true">
         {real.data !== undefined ? real.data : real.isError ? '–' : '…'}
-        {test.data ? <small className="topic-test-count">테스트 {test.data}</small> : null}
       </span>
     </Link>
   );

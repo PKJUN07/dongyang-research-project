@@ -11,8 +11,7 @@ import type { TagTone } from '../../components/ui';
 import { kstDate, relativeDayLabel, topicColor } from '../../lib/format';
 import { DocumentFilterBar } from '../documents/DocumentFilterBar';
 import { Pagination } from '../documents/Pagination';
-import { buildListFilters, hasListConditions, useHiddenSyntheticCount, useListParams } from '../documents/documentFilters';
-import { SyntheticHiddenNotice } from '../documents/SyntheticHiddenNotice';
+import { buildListFilters, hasListConditions, useListParams } from '../documents/documentFilters';
 import { readingStatusLabel, useDocumentTopicIds, useReadingMutation } from './useReading';
 import './library.css';
 
@@ -38,17 +37,14 @@ export function LibraryBoard({ manageOpen }: { manageOpen: boolean }) {
   const location = useLocation();
   const topics = useTopics();
   const [message, setMessage] = useState('');
-  const synthetic: Record<string, string> = params.get('includeSynthetic') === 'true' ? {} : { synthetic: 'false' };
   const topicParam = params.get('topicId') ?? '';
   const selectedTopic = Number(topicParam) > 0 ? topicParam : '';
-  const scope: Record<string, string> = { saved: 'true', ...synthetic, ...(selectedTopic ? { topicId: selectedTopic } : {}) };
+  const scope: Record<string, string> = { saved: 'true', ...(selectedTopic ? { topicId: selectedTopic } : {}) };
   const total = useDocumentCount(scope);
   const unread = useDocumentCount({ ...scope, readingStatus: 'UNREAD' });
   const later = useDocumentCount({ ...scope, readLater: 'true' });
   const favorite = useDocumentCount({ ...scope, favorite: 'true' });
 
-  const includeSynthetic = params.get('includeSynthetic') === 'true';
-  const hiddenSynthetic = useHiddenSyntheticCount(params, { library: true });
   const filterString = buildListFilters(params, { library: true }).toString();
   const list = useQuery({
     queryKey: ['saved-documents', 'all', filterString],
@@ -71,8 +67,6 @@ export function LibraryBoard({ manageOpen }: { manageOpen: boolean }) {
   const conditions = hasListConditions(params);
   const returnTo = location.pathname + location.search;
   const topicList = topics.data ?? [];
-  // 목록이 완전히 비었는데 숨긴 합성 자료만 있는 경우: 빈 상태 자체를 합성 안내로 바꾼다.
-  const onlySyntheticHidden = Boolean(list.data && list.data.totalElements === 0 && hiddenSynthetic > 0);
 
   function selectChip(value: Chip) {
     changeMany({ readingStatus: value === 'unread' ? 'UNREAD' : '', readLater: value === 'later' ? 'true' : '', favorite: value === 'favorite' ? 'true' : '' });
@@ -81,14 +75,13 @@ export function LibraryBoard({ manageOpen }: { manageOpen: boolean }) {
   return <div className="lib-board">
     <div id="lib-manage" className="lib-manage" hidden={!manageOpen}>
       <DocumentFilterBar params={params} topics={topicList} onChange={change} onReset={reset} />
-      <p className="form-help">{params.get('includeSynthetic') === 'true' ? '실제 수집 자료와 합성 테스트 자료를 함께 표시합니다. 주제 카드와 상태 칩 개수도 같은 기준입니다.' : '실제 수집 자료만 표시합니다. 테스트 자료는 위 ‘테스트 자료 포함’에서 켤 수 있습니다.'}</p>
     </div>
 
     <section className="lib-topics" aria-label="주제별 보관함">
       {topics.isPending && <><p className="visually-hidden" role="status">주제 목록 조회 중</p>{[0, 1, 2].map(i => <div key={i} className="lib-topic-card lib-topic-skeleton"><Skeleton lines={3} /></div>)}</>}
       {topics.isError && <p className="lib-inline-alert" role="alert">주제 목록을 불러오지 못했습니다. 아래 목록은 계속 사용할 수 있습니다. <button className="button-secondary" onClick={() => { void topics.refetch(); }}>다시 조회</button></p>}
       {topics.data && !topics.data.length && <p className="lib-topics-empty">아직 관심 주제가 없습니다. <Link className="text-link" to="/search">검색 화면</Link>에서 주제를 만들면 주제별 보관함 카드가 생깁니다.</p>}
-      {topicList.map(topic => <TopicCard key={topic.id} topic={topic} pressed={selectedTopic === String(topic.id)} synthetic={synthetic} weekFrom={weekFrom} today={today}
+      {topicList.map(topic => <TopicCard key={topic.id} topic={topic} pressed={selectedTopic === String(topic.id)} weekFrom={weekFrom} today={today}
         onToggle={() => change('topicId', selectedTopic === String(topic.id) ? '' : String(topic.id))} />)}
     </section>
 
@@ -111,7 +104,6 @@ export function LibraryBoard({ manageOpen }: { manageOpen: boolean }) {
         {(total.isError || unread.isError || later.isError || favorite.isError) && <span className="lib-count-error">일부 개수를 불러오지 못했습니다.</span>}
         <span className="lib-scope-status" role="status">{list.isFetching && list.data ? '목록 갱신 중…' : list.data ? `조건에 맞는 자료 ${list.data.totalElements.toLocaleString()}건` : ''}</span>
       </div>
-      {!onlySyntheticHidden && <div className="lib-synthetic"><SyntheticHiddenNotice hidden={hiddenSynthetic} included={includeSynthetic} onToggle={include => change('includeSynthetic', include ? 'true' : '')} /></div>}
       {message && <p className="lib-message" role="status">{message}</p>}
 
       {list.isPending && <><p className="visually-hidden" role="status">보관 자료 조회 중</p><div className="lib-rows-skeleton">{[0, 1, 2].map(i => <Skeleton key={i} lines={3} />)}</div></>}
@@ -120,10 +112,6 @@ export function LibraryBoard({ manageOpen }: { manageOpen: boolean }) {
       {list.data && (list.data.items.length
         ? <ul className="lib-rows">{list.data.items.map(item => <LibraryRow key={item.documentId} item={item} topics={topicList} selectedTopic={selectedTopic} returnTo={returnTo}
             onUnsaved={title => setMessage(`‘${title}’ 보관을 해제했습니다. 원문·메모·즐겨찾기·읽기 상태는 유지됩니다.`)} />)}</ul>
-        : onlySyntheticHidden ? <div className="lib-empty">
-            <EmptyState title={`테스트(합성) 자료 ${hiddenSynthetic.toLocaleString()}건이 숨겨져 있습니다`} description="기본 설정은 실제 수집 자료만 보여 줍니다. 테스트 검색으로 모은 자료를 담았다면 함께 표시해 확인하세요." />
-            <div className="lib-empty-links"><button onClick={() => change('includeSynthetic', 'true')}>테스트 자료 포함해서 보기</button><Link className="button-link-secondary" to="/search">새 자료 검색하기</Link></div>
-          </div>
         : <div className="lib-empty">
             <EmptyState title={list.data.totalElements ? '현재 페이지에 자료가 없습니다' : conditions ? '조건에 맞는 자료가 없습니다' : '아직 보관한 자료가 없습니다'}
               description={list.data.totalElements ? '첫 페이지로 이동해 보세요.' : conditions ? '주제·상태·필터 조건을 바꾸거나 초기화해 보세요.' : '검색으로 자료를 모은 뒤 자료 상세의 ‘내 보관함에 담기’를 누르면 여기에 모입니다.'} />
@@ -139,8 +127,8 @@ export function LibraryBoard({ manageOpen }: { manageOpen: boolean }) {
   </div>;
 }
 
-function TopicCard({ topic, pressed, synthetic, weekFrom, today, onToggle }: { topic: Topic; pressed: boolean; synthetic: Record<string, string>; weekFrom: string; today: string; onToggle: () => void }) {
-  const base = { saved: 'true', topicId: String(topic.id), ...synthetic };
+function TopicCard({ topic, pressed, weekFrom, today, onToggle }: { topic: Topic; pressed: boolean; weekFrom: string; today: string; onToggle: () => void }) {
+  const base = { saved: 'true', topicId: String(topic.id) };
   const total = useDocumentCount(base);
   const unread = useDocumentCount({ ...base, readingStatus: 'UNREAD' });
   const favorite = useDocumentCount({ ...base, favorite: 'true' });
@@ -176,7 +164,6 @@ function LibraryRow({ item, topics, selectedTopic, returnTo, onUnsaved }: { item
         <Tag tone={statusTone[item.readingStatus]}>{readingStatusLabel[item.readingStatus]}</Tag>
         {item.favorite && <Tag tone="orange">★ 즐겨찾기</Tag>}
         {item.readLater && <Tag tone="purple">나중에 읽기</Tag>}
-        {item.synthetic && <Tag tone="purple">합성 데이터</Tag>}
       </div>
       <h3 id={titleId} className="lib-row-title"><Link to={detail}>{item.title}</Link></h3>
       <p className="lib-row-meta"><span>{sourceLabel[item.sourceType]}</span><span>{item.domain}</span>{topicText && <span>{topicText}</span>}</p>

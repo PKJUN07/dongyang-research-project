@@ -32,8 +32,6 @@
 .lib-board .lib-scope .tag { white-space: normal; overflow-wrap: anywhere; }
 .lib-board .lib-scope-status { margin-left: auto; color: var(--text-muted); font-size: 12.5px; }
 .lib-board .lib-count-error { color: var(--red-text); font-size: 12.5px; }
-.lib-board .lib-synthetic { padding: 12px 20px 0; }
-.lib-board .lib-synthetic:empty { display: none; }
 .lib-board .lib-message { margin: 0; padding: 10px 20px; border-bottom: 1px solid var(--line); color: var(--green-text); background: var(--green-soft); font-size: 13px; }
 .lib-board .lib-list > .lib-inline-alert { margin: 12px 20px 0; }
 .lib-board .lib-list > .state-card { margin: 16px 20px; box-shadow: none; }
@@ -76,7 +74,6 @@
   .lib-board .lib-scope { padding: 0 14px 10px; }
   .lib-board .lib-scope-status { margin-left: 0; width: 100%; }
   .lib-board .lib-message { padding: 10px 14px; }
-  .lib-board .lib-synthetic { padding: 10px 14px 0; }
   .lib-board .lib-rows { padding: 0 14px; }
   .lib-board .lib-row { grid-template-columns: 4px minmax(0, 1fr); gap: 12px; }
   .lib-board .lib-row-bar { grid-row: 1 / span 2; width: 4px; }

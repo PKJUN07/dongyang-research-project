@@ -41,11 +41,12 @@ public class DocumentService {
                 } else content=new ContentExtractor.Content(page.status(),page.reason(),null,null,null);
             }
         } catch(Exception e) { content=new ContentExtractor.Content("BLOCKED","UNSAFE_OR_INVALID_URL",null,null,null); }
-        String hash=null;
-        if(content.text()!=null) {
-            try { hash=HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(content.text().getBytes(StandardCharsets.UTF_8))); }
-            catch(Exception e) { throw new IllegalStateException(e); }
-        }
-        return new Ingested(hit,classification,content,hash,fetchedAt);
+        return new Ingested(hit,classification,content,hash(content.text()),fetchedAt);
+    }
+    /** 본문 SHA-256. 본문이 없으면 null. */
+    public static String hash(String text) {
+        if(text==null) return null;
+        try { return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(text.getBytes(StandardCharsets.UTF_8))); }
+        catch(Exception e) { throw new IllegalStateException(e); }
     }
 }

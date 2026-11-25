@@ -41,7 +41,7 @@ public class Database {
             s.execute("PRAGMA journal_mode=WAL");
             s.execute("CREATE TABLE IF NOT EXISTS schema_version(version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL)");
         }
-        String[] migrations = {"001_core.sql", "002_provider_budget.sql", "003_content.sql", "004_document_identity.sql", "005_user_records.sql", "006_search_metrics.sql", "007_ai.sql", "008_brief.sql"};
+        String[] migrations = {"001_core.sql", "002_provider_budget.sql", "003_content.sql", "004_document_identity.sql", "005_user_records.sql", "006_search_metrics.sql", "007_ai.sql", "008_brief.sql", "009_purge_synthetic.sql", "010_daily_budget.sql", "011_brief_synthesis.sql"};
         for (int i = 0; i < migrations.length; i++) {
             int version = i + 1;
             String sql;

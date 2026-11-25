@@ -116,7 +116,6 @@ input[type=search]:focus, input[type=text]:focus, input[type=date]:focus, select
 .topic-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .topic-count { flex: none; font-weight: 700; font-variant-numeric: tabular-nums; }
 .topic-count { display: grid; justify-items: end; line-height: 1.25; }
-.topic-test-count { color: var(--sidebar-muted); font-size: 10.5px; font-weight: 600; white-space: nowrap; }
 .sidebar-extra, .sidebar-extra-body { display: flex; flex: 1 0 auto; flex-direction: column; min-width: 0; }
 .sidebar-extra-toggle { display: none; }
 .sidebar-note { margin: 0 9px; color: var(--sidebar-text); font-size: 12.5px; line-height: 1.6; }
@@ -167,7 +166,7 @@ main:focus { outline: none; }
 /* 태그 */
 .card-tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .tag { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 7px; color: var(--gray-text); background: var(--gray-soft); font-size: 12px; font-weight: 700; line-height: 1.5; white-space: nowrap; }
-.tag-purple, .tag-synthetic { color: var(--primary-text); background: var(--primary-soft); }
+.tag-purple { color: var(--primary-text); background: var(--primary-soft); }
 .tag-green, .tag-official { color: var(--green-text); background: var(--green-soft); }
 .tag-orange { color: var(--orange-text); background: var(--orange-soft); }
 .tag-blue, .tag-user { color: var(--blue-text); background: var(--blue-soft); }

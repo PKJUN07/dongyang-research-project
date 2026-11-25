@@ -9,7 +9,7 @@ export function DocumentCard({ document, runId, returnTo }: { document: Document
   if (runId) detailParams.set('runId', String(runId));
   if (returnTo) detailParams.set('returnTo', returnTo);
   return <article className="result-card">
-    <div className="card-tags"><span className={`tag tag-${sourceTone[document.sourceType]}`} title={document.classificationReason}>{sourceLabel[document.sourceType]}</span>{document.synthetic && <span className="tag tag-purple">합성 데이터</span>}</div>
+    <div className="card-tags"><span className={`tag tag-${sourceTone[document.sourceType]}`} title={document.classificationReason}>{sourceLabel[document.sourceType]}</span></div>
     <h3><Link to={`/documents/${document.documentId}?${detailParams}`}>{document.title}</Link></h3><p className="result-snippet">{document.snippet || '검색 요약이 제공되지 않았습니다.'}</p>
     <p className="result-domain">{document.domain} · 검색 수집: {document.retrievedAt ? `${formatKstDateTime(document.retrievedAt)} (${relativeTime(document.retrievedAt)})` : '미상'}</p>
     <details className="source-details"><summary>{extractionLabel[document.extractionStatus]} · 출처 정보</summary>

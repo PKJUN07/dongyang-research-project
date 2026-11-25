@@ -31,11 +31,11 @@ export function RunView({ run, observations, focusRequested, onFocused }: { run:
   const active = activeRun(run);
   const chip = statusChip[run.status];
   const topicName = topics.data?.find(topic => topic.id === run.topicId)?.name ?? (topics.isPending ? '주제 확인 중' : `주제 #${run.topicId}`);
-  const provider = providerLabel(run.provider, run.synthetic);
+  const provider = providerLabel(run.provider);
   const item = lookup.state === 'found' ? lookup.item : undefined;
   const empty = active || lookup.state === 'loading' ? '집계 중' : '–';
-  const libraryLink = run.synthetic ? '/library?includeSynthetic=true' : '/library';
-  const documentsLink = run.synthetic ? '/documents?includeSynthetic=true' : '/documents';
+  const libraryLink = '/library';
+  const documentsLink = '/documents';
 
   const timeline = [
     ...(run.startedAt ? [{ at: run.startedAt, text: '서버 기록 · 작업 시작', tone: 'default' as const }] : []),
@@ -49,7 +49,7 @@ export function RunView({ run, observations, focusRequested, onFocused }: { run:
         <div className="card-tags">
           <Tag tone="purple">검색 세션 #{run.runId}</Tag>
           <Tag tone={chip.tone}>{chip.label}</Tag>
-          <Tag tone={run.synthetic ? 'orange' : 'blue'}>{run.synthetic ? '합성 테스트 자료' : '실제 검색'}</Tag>
+          <Tag tone="blue">실제 검색</Tag>
         </div>
         <h2 className="search-session-title" id={titleId}>{run.query}</h2>
         <p className="search-session-desc">{topicName} · {provider}</p>

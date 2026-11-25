@@ -13,7 +13,7 @@ export type DocumentResult = {
   domain: string; retrievedAt: string; contentVersion: number; duplicateCandidateCount: number; readingStatus: 'UNREAD' | 'READING' | 'READ'; saved: boolean; favorite: boolean; readLater: boolean;
 };
 export type ResultPage = { items: DocumentResult[]; totalElements: number; page: number; size: number; totalPages: number };
-export type Config = { provider: string; synthetic: boolean; aiEnabled: boolean; externalSearchReady: boolean; searchReason: string; attempts: number; maximum: number; remaining: number };
+export type Config = { provider: string; synthetic: boolean; aiEnabled: boolean; externalSearchReady: boolean; searchReason: string; attempts: number; maximum: number; remaining: number; pagesPerSearch: number; scrapeAvailable: boolean; budgetWindow: string };
 export class ApiError extends Error {
   code: string;
   readonly status?: number;

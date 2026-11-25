@@ -12,14 +12,20 @@ import org.springframework.stereotype.Component;
 public class SerperTransport {
     public record Response(int status,String body,String retryAfter) {}
     private final HttpClient client=HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).followRedirects(HttpClient.Redirect.NEVER).build();
-    public Response post(String key,String body) {
-        var request=HttpRequest.newBuilder(URI.create("https://google.serper.dev/search"))
-            .timeout(Duration.ofSeconds(15)).header("X-API-KEY",key).header("Content-Type","application/json")
+    private static final URI SEARCH=URI.create("https://google.serper.dev/search");
+    private static final URI SCRAPE=URI.create("https://scrape.serper.dev");
+    /** 검색 결과 한 페이지 요청. */
+    public Response post(String key,String body) { return send(SEARCH,key,body,15); }
+    /** 공개 웹페이지 본문 추출 요청(Serper scrape). 본문이 길 수 있어 대기 시간을 더 준다. */
+    public Response scrape(String key,String body) { return send(SCRAPE,key,body,30); }
+    private Response send(URI target,String key,String body,int seconds) {
+        var request=HttpRequest.newBuilder(target)
+            .timeout(Duration.ofSeconds(seconds)).header("X-API-KEY",key).header("Content-Type","application/json")
             .POST(HttpRequest.BodyPublishers.ofString(body)).build();
         try {
             var pending=client.sendAsync(request,info -> new LimitedBody());
             HttpResponse<String> response;
-            try { response=pending.get(15,TimeUnit.SECONDS); }
+            try { response=pending.get(seconds,TimeUnit.SECONDS); }
             catch(TimeoutException e) { pending.cancel(true); throw new ProviderException("PROVIDER_TIMEOUT"); }
             catch(InterruptedException e) { pending.cancel(true); throw e; }
             return new Response(response.statusCode(),response.body(),response.headers().firstValue("Retry-After").orElse(""));
@@ -38,7 +44,7 @@ public class SerperTransport {
         public void onSubscribe(Flow.Subscription s) { subscription=s; s.request(1); }
         public void onNext(List<ByteBuffer> buffers) {
             for(ByteBuffer buffer:buffers) {
-                if(bytes.size()+buffer.remaining()>1_000_000) { subscription.cancel(); result.completeExceptionally(new IllegalStateException("Response too large")); return; }
+                if(bytes.size()+buffer.remaining()>3_000_000) { subscription.cancel(); result.completeExceptionally(new IllegalStateException("Response too large")); return; }
                 byte[] part=new byte[buffer.remaining()];buffer.get(part);bytes.writeBytes(part);
             } subscription.request(1);
         }

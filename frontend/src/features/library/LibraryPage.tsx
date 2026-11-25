@@ -4,7 +4,7 @@ import { PageHeader } from '../../components/PageHeader';
 import { LibraryBoard } from './LibraryBoard';
 
 /** '보관함 관리' 패널에서만 바꿀 수 있는 조건(주제·상태 칩·정렬 이외). */
-const managedKeys = ['title', 'sourceType', 'from', 'to', 'dateBasis', 'includeUnknown', 'size', 'includeSynthetic'];
+const managedKeys = ['title', 'sourceType', 'from', 'to', 'dateBasis', 'includeUnknown', 'size'];
 
 export default function LibraryPage() {
   const [params] = useSearchParams();

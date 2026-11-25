@@ -31,7 +31,31 @@ export type AiJobs = { jobs: AiJob[]; inputAvailable: boolean; model: string; pr
 export type Readiness = 'READY' | 'RUNNING' | 'STALE' | 'NOT_ANALYZED' | 'FAILED';
 /** 자료 요약 모음 스냅샷 한 항목(생성 시점의 최신 성공 분석 포함). */
 export type BriefEntry = { documentId: number; title: string; url: string; sourceType: SourceType; analysis: AiJob };
-export type Brief = { briefId: number; snapshot: BriefEntry[]; createdAt: string };
+/** 교차 정리 항목이 가리키는 근거: 스냅샷의 source(0부터)번째 자료의 claim(0부터)번째 핵심 주장. */
+export type BriefRef = { source: number; claim: number };
+export type BriefItem = { text: string; refs: BriefRef[] };
+export type BriefSynthesis = {
+  overview: string;
+  common: BriefItem[];
+  differences: (BriefItem & { topic: string })[];
+  checks: BriefItem[];
+  answer?: BriefItem;
+};
+export type SynthesisStatus = 'NONE' | 'NOT_APPLICABLE' | 'QUEUED' | 'RUNNING' | 'SUCCEEDED' | 'FAILED';
+export type Brief = {
+  briefId: number; snapshot: BriefEntry[]; createdAt: string;
+  question?: string | null; synthesisStatus?: SynthesisStatus; synthesis?: BriefSynthesis | null;
+  synthesisError?: string | null; synthesisModel?: string | null; currentModel?: string;
+};
+
+/**
+ * 모델이 반복하는 '발췌문만 사용해 원문 전체 맥락을 모른다'류 문장. 입력 유형은 화면이 따로 알리므로
+ * 이전에 저장된 분석에서도 한계 목록에서 뺀다(서버 AiController.SCOPE_BOILERPLATE와 같은 규칙).
+ */
+const scopeBoilerplate = /(발췌|스니펫|검색\s*요약|검색\s*결과|일부\s*(내용|구간|본문)).{0,40}(맥락|전체|원문|파악|확인)|원문\s*전체|전체\s*(맥락|내용)을?\s*(파악|확인|알)/;
+export function meaningfulLimitations(limitations: string[]): string[] {
+  return limitations.filter(item => !scopeBoilerplate.test(item));
+}
 
 /** 주제 목록. 기존 TopicPanel 등과 같은 키 ['topics']. */
 export function useTopics() {
@@ -77,7 +101,6 @@ function countQuery(params: Record<string, string>) {
 /**
  * /documents 조건에 맞는 자료 수(totalElements). size=1로 조회한다.
  * 키 접두사가 ['saved-documents']라서 읽기 상태·주제 연결 변경 시 함께 갱신된다.
- * 합성 자료를 빼려면 호출부가 { synthetic: 'false' }를 넘긴다.
  */
 export function useDocumentCount(params: Record<string, string>) {
   return useQuery(countQuery(params));
@@ -85,11 +108,11 @@ export function useDocumentCount(params: Record<string, string>) {
 
 export type TopicCount = { topicId: number; count: number | undefined };
 
-/** 주제별 자료 수(합성 제외). data는 주제 목록 순서, 아직 못 받은 개수는 undefined. */
+/** 주제별 자료 수. data는 주제 목록 순서, 아직 못 받은 개수는 undefined. */
 export function useTopicCounts() {
   const topics = useTopics();
   return useQueries({
-    queries: (topics.data ?? []).map(topic => countQuery({ topicId: String(topic.id), synthetic: 'false' })),
+    queries: (topics.data ?? []).map(topic => countQuery({ topicId: String(topic.id) })),
     combine: results => ({
       data: (topics.data ?? []).map((topic, index): TopicCount => ({ topicId: topic.id, count: results[index]?.data })),
       isPending: topics.isPending || results.some(result => result.isPending),

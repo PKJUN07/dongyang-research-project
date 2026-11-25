@@ -54,7 +54,7 @@ function StatsContent({ filterOpen, setFilterOpen, series, setSeries }: {
   const topicName = topicId ? topic?.name ?? `주제 #${topicId}` : '전체 주제';
   const data = overview.data;
 
-  function documents(extra: Record<string, string> = {}, library = false) { const q = new URLSearchParams({ from, to, dateBasis: 'FIRST_SAVED', includeSynthetic: 'true', ...extra }); if (topicId) q.set('topicId', topicId); return (library ? '/library?' : '/documents?') + q; }
+  function documents(extra: Record<string, string> = {}, library = false) { const q = new URLSearchParams({ from, to, dateBasis: 'FIRST_SAVED', ...extra }); if (topicId) q.set('topicId', topicId); return (library ? '/library?' : '/documents?') + q; }
   function apply(event: React.FormEvent) {
     event.preventDefault();
     const days = (Date.parse(draftTo) - Date.parse(draftFrom)) / 86400000;
@@ -94,8 +94,8 @@ function StatsContent({ filterOpen, setFilterOpen, series, setSeries }: {
 
     {(data || allHistory.data || overview.isPending || allHistory.isPending) && <Kpis overview={data} overviewPending={overview.isPending} allHistory={allHistory} readLink={documents({ readingStatus: 'READ' })} />}
     {data && <details className="stats-details stats-population">
-      <summary>집계 기준 · 합성 테스트 자료 {data.synthetic}건 포함 (실제 수집 {data.total - data.synthetic}건)</summary>
-      <p>검색 횟수·원시 수집·검색별 신규 고유·중복 군집은 <strong>검색 시작 시각</strong> 기준입니다. 읽음 비율·처음 저장한 자료·읽기 진행·자료 유형은 <strong>처음 저장일</strong> 기준의 현재 상태라 두 숫자가 다를 수 있습니다.{allHistory.data && allHistory.data.items.length > 0 ? ` 검색 이력 중 합성 테스트 검색은 ${sumHistory(allHistory.data.items).synthetic}회입니다.` : ''}</p>
+      <summary>집계 기준 · 수집 자료 {data.total}건</summary>
+      <p>검색 횟수·원시 수집·검색별 신규 고유·중복 군집은 <strong>검색 시작 시각</strong> 기준입니다. 읽음 비율·처음 저장한 자료·읽기 진행·자료 유형은 <strong>처음 저장일</strong> 기준의 현재 상태라 두 숫자가 다를 수 있습니다.</p>
     </details>}
 
     {overview.isPending && <div className="stats-loading"><LoadingState title="주제 분석 데이터를 계산하고 있습니다" /><Skeleton lines={4} /></div>}
@@ -214,8 +214,8 @@ function SourceStatus({ config, health, lastSuccess, historyState, truncated }: 
   lastSuccess: string | undefined; historyState: 'pending' | 'ready' | 'error'; truncated: boolean;
 }) {
   const c = config.data;
-  const providerName = c ? (c.synthetic ? '합성 테스트' : c.provider === 'SERPER' ? 'Serper' : c.provider) : '검색 제공자';
-  const providerTag = c ? (c.synthetic ? <Tag tone="purple">테스트 모드</Tag> : c.externalSearchReady ? <Tag tone="green">요청 가능</Tag> : <Tag tone="orange">사용 불가</Tag>) : null;
+  const providerName = c ? (c.provider === 'SERPER' ? 'Serper' : c.provider) : '검색 제공자';
+  const providerTag = c ? (c.externalSearchReady ? <Tag tone="green">요청 가능</Tag> : <Tag tone="orange">사용 불가</Tag>) : null;
   const lastText = historyState === 'pending' ? '확인 중' : historyState === 'error' ? '이력을 불러오지 못함' : lastSuccess ? `${formatKstDateTime(lastSuccess)} (KST)` : '이 조건에서 성공한 검색 없음';
   return (
     <Card title="출처 상태">
@@ -228,7 +228,7 @@ function SourceStatus({ config, health, lastSuccess, historyState, truncated }: 
             {config.isError && !c && <span>검색 설정을 불러오지 못했습니다. <button type="button" className="button-quiet stats-inline-button" onClick={() => void config.refetch()}>다시 확인</button></span>}
             {c && <>
               <span>{searchReasonText[c.searchReason] ?? c.searchReason}</span>
-              <span>남은 예산 {c.remaining} / {c.maximum}회 (누적 사용 {c.attempts}회)</span>
+              <span>오늘 남은 호출 {c.remaining} / {c.maximum}회 (오늘 사용 {c.attempts}회 · 검색 1회당 최대 {c.pagesPerSearch}페이지)</span>
             </>}
             <span>마지막 성공 검색: {lastText}{truncated && lastSuccess ? ' · 최근 이력 기준' : ''}</span>
           </div>
@@ -249,9 +249,8 @@ function SourceStatus({ config, health, lastSuccess, historyState, truncated }: 
 
 const searchReasonText: Record<string, string> = {
   READY: 'Serper 실제 검색 요청이 가능합니다.',
-  TEST_MODE: '실제 웹 검색이 연결되지 않아 합성 자료로 기능을 시험합니다.',
   PROVIDER_KEY_MISSING: '서버에 Serper API 키가 설정되지 않았습니다.',
   APPROVAL_REQUIRED: '외부 검색 호출 승인이 설정되지 않았습니다.',
-  BUDGET_EXHAUSTED: '승인된 누적 검색 횟수를 모두 사용했습니다.',
+  BUDGET_EXHAUSTED: '오늘의 Serper 호출 상한을 모두 사용했습니다. 자정(KST)에 다시 채워집니다.',
   PROVIDER_COOLDOWN: '검색 제공자의 요청 제한 대기 중입니다.',
 };

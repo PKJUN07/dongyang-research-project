@@ -1,6 +1,6 @@
 # ResearchBoard backend
 
-로컬 SQLite에 관심 주제·검색 결과·읽기 상태·메모를 저장하며 통계와 검색 이력을 제공합니다. 기본 모드는 외부 요청이 없는 `fake`입니다. AI는 10주차 이후 범위입니다. 최신 설치·실행·종료 안내는 [9주차 실행 안내](../docs/week9-runbook.md)를 참고하세요.
+로컬 SQLite에 관심 주제·검색 결과·읽기 상태·메모를 저장하며 통계와 검색 이력을 제공합니다. 검색 제공자는 Serper입니다(합성 `fake` 모드는 폐기되어 테스트 코드에만 남아 있습니다). 최신 설치·실행·종료 안내는 [9주차 실행 안내](../docs/week9-runbook.md)를 참고하세요.
 
 ## Run
 
@@ -25,13 +25,15 @@ Java 21 이상 호환 JDK가 필요합니다. 검증 환경은 Temurin 25.0.1, �
 | 환경변수 | 기본값 | 의미 |
 |---|---|---|
 | RESEARCH_DB_PATH | data/research-board.db | DB 파일 경로. 절대 경로 권장 |
-| RESEARCH_PROVIDER | fake | fake 또는 serper |
+| RESEARCH_PROVIDER | serper | serper (fake는 자동 테스트 전용) |
 | SERPER_API_KEY | 비어 있음 | 서버 전용 키. 채팅·소스·VITE 변수에 넣지 않음 |
 | EXTERNAL_SEARCH_APPROVED | false | true일 때만 실제 검색 허용 |
-| MAX_PROVIDER_ATTEMPTS | 2 | 해당 DB의 누적 외부 요청 상한. 실패도 차감 |
+| MAX_PROVIDER_ATTEMPTS | 200 | 하루(Asia/Seoul) Serper 호출 상한. 결과 페이지·본문 추출마다 1회, 실패도 차감. 자정에 다시 채워짐 |
+| SERPER_PAGES | 3 | 검색 1회에 이어 받는 결과 페이지 수(1~5, 페이지당 10건) |
+| SERPER_SCRAPE_ENABLED | true | 정책에 없는 출처의 본문을 사용자가 요청하면 Serper 본문 추출로 가져옴(robots 차단 출처 제외) |
 | SOURCE_POLICY_PATH | 비어 있음 | 직접 검토한 출처·본문 처리 정책 JSON의 절대 경로 |
 
-외부 검색은 1페이지·최대 10건, 자동 재시도 0회, HTTP 전체 제한 15초로 시작합니다. 429 응답의 Retry-After를 DB에 기록하고 대기 중 재요청을 차단합니다. 예산을 우회하기 위해 DB를 삭제하거나 카운터를 초기화하지 마세요.
+외부 검색은 페이지당 최대 10건을 최대 `SERPER_PAGES`페이지까지 이어 받습니다. 결과가 10건 미만인 페이지가 나오거나 상한·대기에 걸리면 받은 결과까지만 저장합니다. 자동 재시도 0회, HTTP 전체 제한 15초입니다. 429 응답의 Retry-After를 DB에 기록하고 대기 중 재요청을 차단합니다. 예산을 우회하기 위해 DB를 삭제하거나 카운터를 초기화하지 마세요.
 
 본문 요청은 정책 파일에서 정확한 호스트와 경로, 운영 주체·근거 URL·검토일·허용 범위를 확인한 항목만 가능합니다. robots.txt, 사이트 이용 조건, 저장 허용 범위를 확인한 뒤 fetchAllowed를 활성화하세요. 빈 정책에서는 원문 링크와 검색 요약만 제공합니다.
 
@@ -58,14 +60,6 @@ java -cp $reviewClasspath kr.ac.dongyang.researchboard.document.ReprocessDocumen
 ## 프론트 실행
 
 별도 터미널에서 frontend 폴더를 열고 `npm run dev`를 실행합니다. 이 PC의 전역 npm 문제는 기존 의존성이 있는 상태에서 `.\node_modules\.bin\vite.cmd`로 우회할 수 있습니다. 기본 API 프록시는 8080이며 `RESEARCH_API_TARGET`으로 로컬 테스트 포트를 분리할 수 있습니다.
-
-## 합성 시나리오
-
-- 일반 검색어: 합성 카드 2건, 본문 파서 및 DB 저장 실행
-- `테스트:0건`: 성공 0건
-- `테스트:실패`: 제공자 실패
-- `테스트:시간초과`: 제공자 timeout
-- `테스트:부분실패`: 본문 접근 제한 1건, 결과 링크 유지
 
 세부 API와 검증 상태는 `../docs/week2-4-progress.md`를 참고하세요.
 

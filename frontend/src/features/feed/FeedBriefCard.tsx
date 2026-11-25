@@ -1,22 +1,13 @@
 import { Link } from 'react-router-dom';
 import { ApiError, sourceLabel } from '../../api/client';
-import { parseAiResult } from '../../api/queries';
 import { Skeleton, Tag } from '../../components/ui';
 import { formatKstDateTime, sourceTone } from '../../lib/format';
 import type { LastBrief } from './feedUtils';
 
 /** 'AI 주제 브리프' = 최근 만든 자료 요약 모음 스냅샷. 출처별 요약을 따로 보여 주고 하나의 결론으로 합치지 않는다. */
-export function FeedBriefCard({ lastBrief, detailSearch, includeSynthetic, hiddenSyntheticCount, onIncludeSynthetic }: {
-  lastBrief: LastBrief; detailSearch: string; includeSynthetic: boolean;
-  /** 합성 제외 상태에서 이 모음에 포함된 합성 자료 수(모르면 0). */
-  hiddenSyntheticCount: number; onIncludeSynthetic: () => void;
-}) {
+export function FeedBriefCard({ lastBrief, detailSearch }: { lastBrief: LastBrief; detailSearch: string }) {
   const { briefId, query: brief } = lastBrief;
-  const syntheticQuery = includeSynthetic ? 'includeSynthetic=true' : '';
-  const briefLink = (id?: number) => {
-    const search = [id ? `briefId=${id}` : '', syntheticQuery].filter(Boolean).join('&');
-    return search ? `/brief?${search}` : '/brief';
-  };
+  const briefLink = (id?: number) => id ? `/brief?briefId=${id}` : '/brief';
   const notFound = brief.error instanceof ApiError && brief.error.status === 404;
 
   const header = (
@@ -34,7 +25,7 @@ export function FeedBriefCard({ lastBrief, detailSearch, includeSynthetic, hidde
     body = (
       <div className="feed-brief-empty">
         <p><strong>아직 만든 자료 요약 모음이 없습니다.</strong></p>
-        <p>AI 분석을 마친 자료를 최대 5개 골라 요약 모음을 만들면 이곳에 출처별 요약이 표시됩니다.</p>
+        <p>AI 분석을 마친 자료를 2~5개 고르면 공통점·차이·원문 확인이 필요한 부분을 나눠 정리합니다. 모든 문장은 근거 자료 번호와 연결됩니다.</p>
         <Link className="button-link-secondary" to={briefLink()}>자료 요약 모음 만들기</Link>
       </div>
     );
@@ -49,40 +40,40 @@ export function FeedBriefCard({ lastBrief, detailSearch, includeSynthetic, hidde
     );
   } else {
     const data = brief.data;
+    const synthesis = data.synthesis ?? undefined;
+    const status = data.synthesisStatus ?? 'NONE';
+    const snippetCount = data.snapshot.filter(entry => entry.analysis?.input_type === 'SNIPPET').length;
     body = (
       <>
-        <p className="feed-brief-intro">
-          최근 만든 자료 요약 모음 #{data.briefId}입니다. 각 출처의 AI 요약을 따로 보여 주며, 서로 다른 자료를 하나의 결론으로 합치지 않습니다.
-          생성 시점의 스냅샷이므로 원문이 바뀌었을 수 있습니다.
-        </p>
-        <ol className="feed-brief-list">
-          {data.snapshot.map((entry, index) => {
-            const result = parseAiResult(entry.analysis?.result_json);
-            return (
-              <li key={entry.documentId} className="feed-brief-entry">
-                <div className="feed-brief-entry-head">
-                  <span className="feed-brief-number" aria-label={`출처 ${index + 1}`}>[{index + 1}]</span>
-                  <Tag tone={sourceTone[entry.sourceType] ?? 'gray'}>{sourceLabel[entry.sourceType] ?? '기타'}</Tag>
-                </div>
-                <Link className="feed-brief-entry-title" to={`/documents/${entry.documentId}?returnTo=${encodeURIComponent(detailSearch)}`}>{entry.title}</Link>
-                <p className="feed-brief-summary">
-                  <span className="feed-ai-mark">AI 요약</span>{' '}
-                  {result ? result.summary : '요약 결과를 읽을 수 없습니다.'}
-                </p>
-                <span className="feed-brief-meta">
-                  {result ? `핵심 주장 ${result.claims.length}개` : '주장 수 확인 불가'}
-                  {' · '}{entry.analysis?.input_type === 'SNIPPET' ? '검색 요약 기반' : '본문 기반'}
-                </span>
-              </li>
-            );
-          })}
-        </ol>
-        {hiddenSyntheticCount > 0 && (
-          <div className="feed-inline-note">
-            <span>이 모음의 자료 {hiddenSyntheticCount}건은 테스트(합성) 자료라 ‘테스트 자료 포함’ 시 아래 목록에 보입니다.</span>
-            <button type="button" className="button-secondary" onClick={onIncludeSynthetic}>테스트 자료 포함해서 보기</button>
-          </div>
+        {data.question && <p className="feed-brief-question"><span className="feed-ai-mark">질문</span> {data.question}</p>}
+        {synthesis ? (
+          <>
+            <p className="feed-brief-overview">{synthesis.answer?.text ?? synthesis.overview}</p>
+            <ul className="feed-brief-stats" aria-label="교차 정리 항목 수">
+              <li><strong>{synthesis.common.length}</strong>공통점</li>
+              <li><strong>{synthesis.differences.length}</strong>차이·고유</li>
+              <li><strong>{synthesis.checks.length}</strong>원문 확인 필요</li>
+            </ul>
+            {synthesis.common[0] && <p className="feed-brief-highlight"><span className="feed-brief-hl-label">공통</span>{synthesis.common[0].text}</p>}
+            {synthesis.differences[0] && <p className="feed-brief-highlight"><span className="feed-brief-hl-label">차이</span>{synthesis.differences[0].topic ? `${synthesis.differences[0].topic} · ` : ''}{synthesis.differences[0].text}</p>}
+          </>
+        ) : (
+          <p className="feed-brief-intro" role={status === 'FAILED' ? 'alert' : 'status'}>
+            {status === 'QUEUED' || status === 'RUNNING' ? '로컬 AI가 자료끼리 공통점과 차이를 비교하고 있습니다.'
+              : status === 'FAILED' ? '교차 정리를 만들지 못했습니다. 전체 보기에서 다시 요청할 수 있습니다.'
+              : '자료별 요약만 있는 모음입니다. 전체 보기에서 교차 정리를 만들 수 있습니다.'}
+          </p>
         )}
+        <ol className="feed-brief-sources" aria-label="모음에 포함된 자료">
+          {data.snapshot.map((entry, index) => (
+            <li key={entry.documentId}>
+              <span className="bv-chip" aria-hidden="true">{index + 1}</span>
+              <Link to={`/documents/${entry.documentId}?returnTo=${encodeURIComponent(detailSearch)}`}>{entry.title}</Link>
+              <Tag tone={sourceTone[entry.sourceType] ?? 'gray'}>{sourceLabel[entry.sourceType] ?? '기타'}</Tag>
+            </li>
+          ))}
+        </ol>
+        {snippetCount > 0 && <span className="feed-brief-meta">검색 발췌 기반 자료 {snippetCount}건 포함 · 본문을 확보해 다시 분석하면 정리가 더 정확해집니다.</span>}
         {brief.isRefetchError && <p className="feed-inline-alert" role="alert">최신 상태로 다시 불러오지 못해 이전 결과를 표시합니다.</p>}
       </>
     );

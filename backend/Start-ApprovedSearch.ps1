@@ -1,4 +1,4 @@
-param([string]$DbPath = '', [int]$Port = 8080, [ValidateRange(1,10000)][int]$MaximumAttempts = 2)
+param([string]$DbPath = '', [int]$Port = 8080, [ValidateRange(1,10000)][int]$MaximumAttempts = 200)
 $ErrorActionPreference = 'Stop'
 $keyWasPrompted = $false
 if ([string]::IsNullOrWhiteSpace($env:SERPER_API_KEY)) {

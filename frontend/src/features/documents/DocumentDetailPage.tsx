@@ -64,7 +64,6 @@ function DetailBody({ item, backTo }: { item: DocumentResult; backTo: string }) 
       <div className="card-tags det-tags">
         <Tag tone={sourceTone[item.sourceType]}>{sourceLabel[item.sourceType]}</Tag>
         {linkedTopics.map(t => <span key={t.id} className="tag det-topic-tag"><span className="topic-dot" style={{ background: topicColor(t.id) }} aria-hidden="true" />{t.name}</span>)}
-        {item.synthetic && <Tag tone="purple">합성 데이터</Tag>}
         {item.contentText && <Tag>읽는 데 약 {readingMinutes(item.contentText)}분</Tag>}
       </div>
       <h2 className="det-title" id={`doc-title-${id}`}>{item.title}</h2>
@@ -79,7 +78,7 @@ function DetailBody({ item, backTo }: { item: DocumentResult; backTo: string }) 
       <NoteEditor key={id} documentId={id} />
     </article>
     <aside className="stack det-aside" aria-label="자료 조작과 출처 정보" id={`actions-${id}`}>
-      <DocumentActions documentId={id} url={item.url} synthetic={item.synthetic} />
+      <DocumentActions documentId={id} url={item.url} />
       <Card title="출처 정보" className="det-source">
         <dl className="det-source-list">
           <div><dt>출처 근거</dt><dd><Tag tone={sourceTone[item.sourceType]}>{sourceLabel[item.sourceType]}</Tag> {item.classificationReason || '분류 근거가 기록되지 않았습니다.'}</dd></div>

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { request } from '../../api/client';
 import type { RunStatus } from '../../api/client';
 import type { HistoryPage } from '../../api/queries';
-import { Card, Notice, ProgressBar, Skeleton, StatTile, Tag } from '../../components/ui';
+import { Card, Notice, ProgressBar, Skeleton, StatTile } from '../../components/ui';
 import { formatKstDateTime, kstDate } from '../../lib/format';
 import { runStatusLabel } from './feedUtils';
 
@@ -38,7 +38,6 @@ export function FeedSummaryAside({ readyCount, pageCount, readinessState }: {
         <p className="feed-aside-run">
           <span className="feed-aside-topic">{latest.topic}</span>
           <span>{formatKstDateTime(latest.startedAt)} · {runStatusLabel[latest.status as RunStatus] ?? latest.status}</span>
-          {latest.synthetic && <Tag tone="orange">테스트 검색</Tag>}
         </p>
         <div className="grid-2 feed-aside-tiles">
           <StatTile label="신규 고유" value={latest.created} tone="green" />

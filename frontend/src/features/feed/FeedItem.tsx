@@ -53,7 +53,6 @@ export function FeedItem({ document, topics, selectedTopicId, briefNumber, analy
           {linkedTopics.slice(0, 2).map(topic => <Tag key={topic.id}>{topic.name}</Tag>)}
           {linkedTopics.length > 2 && <Tag>외 {linkedTopics.length - 2}</Tag>}
           {isNewDocument(document.retrievedAt) && <Tag tone="purple">새 자료</Tag>}
-          {document.synthetic && <Tag tone="orange">합성 데이터</Tag>}
           {briefNumber !== undefined && <Tag tone="blue">브리프 [{briefNumber}]</Tag>}
         </div>
         <div className="feed-item-toggles">

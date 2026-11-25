@@ -32,7 +32,7 @@ export function RecentSearches() {
         return <li key={item.id}>
           <Link to={`/search?runId=${item.id}`} className="search-recent-link">
             <span className="search-recent-top"><strong>{query ?? item.topic}</strong><Tag tone={chip.tone}>{chip.label}</Tag></span>
-            <span className="search-recent-meta">{query ? `${item.topic} · ` : ''}세션 #{item.id} · {providerLabel(item.provider, item.synthetic)} · {formatKstDateTime(item.startedAt)} · 신규 {item.created}건</span>
+            <span className="search-recent-meta">{query ? `${item.topic} · ` : ''}세션 #{item.id} · {providerLabel(item.provider)} · {formatKstDateTime(item.startedAt)} · 신규 {item.created}건</span>
           </Link>
         </li>;
       })}
