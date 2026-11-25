@@ -111,4 +111,34 @@ class ImprovementTest {
   assertEquals(1,out.path("common").get(0).path("refs").get(1).path("source").asInt());assertEquals("답",out.path("answer").path("text").asText());
   assertEquals("NO_VALID_EVIDENCE",assertThrows(IllegalArgumentException.class,()->BriefSynthesis.normalize(json.readTree("{\"overview\":\"x\",\"common\":[],\"differences\":[{\"topic\":\"t\",\"text\":\"x\",\"claimIds\":[]}],\"checks\":[]}"),claims,false)).getMessage());
  }
+ @Test void robotsRulesUseOwnGroupThenGenericAndLongestMatch(){
+  var rules=PageFetcher.parseRobots("User-agent: Googlebot\nDisallow: /\n\nUser-agent: *\nDisallow: /board/\nAllow: /board/view\n");
+  assertEquals(2,rules.size());
+  assertTrue(rules.stream().anyMatch(r->r[0].equals("D")&&r[1].equals("/board/")));
+  var own=PageFetcher.parseRobots("User-agent: *\nDisallow: /\nUser-agent: ResearchBoard\nAllow: /\n");
+  assertEquals("A",own.get(0)[0]);
+ }
+ @Test void boardPagesWithoutArticleTagStillYieldTheirBody(){
+  String links="<div class='menu'>"+"<a href='/x'>메뉴 링크</a>".repeat(40)+"</div>";
+  String post="<div id='powerbbsContent'>"+"활 운용은 속성 강화가 핵심입니다. 회피 장전 타이밍을 익히세요.<br>".repeat(15)+"</div>";
+  var content=new ContentExtractor().extract(("<html><body>"+links+"<div class='wrap'><h1>제목</h1>"+post+"</div></body></html>").getBytes(StandardCharsets.UTF_8),"text/html; charset=UTF-8","https://www.inven.co.kr/board/1");
+  assertEquals("SUCCESS",content.status());assertTrue(content.text().contains("회피 장전"));assertFalse(content.text().contains("메뉴 링크"));
+ }
+ @Test void searchDropsResultsWithoutSnippetOrBodyAndScrapesTheRest()throws Exception{
+  var db=new Database(dir.resolve("worker.db").toString());var repo=new SearchRepository(db);
+  var topicRepo=new kr.ac.dongyang.researchboard.topic.TopicRepository(db);long topic=topicRepo.create("t","q").id();
+  SearchProvider provider=new SearchProvider(){public String name(){return "SERPER";}public boolean synthetic(){return false;}
+   public List<Hit> search(Query q){return List.of(new Hit("빈 결과","https://empty.example.org/a","",1),new Hit("발췌 있음","https://ok.example.org/b","발췌문",2));}};
+  var http=new PagedTransport();
+  // push는 스택이므로 나중에 넣은 응답이 먼저 쓰인다: 첫 결과(발췌 없음)는 추출 실패, 둘째 결과는 본문 추출 성공.
+  http.scrapes.push(new SerperTransport.Response(200,json.writeValueAsString(Map.of("text","추출한 본문 문장. ".repeat(30))),""));
+  http.scrapes.push(new SerperTransport.Response(500,"",""));
+  var policy=new SourcePolicy("");var safety=new UrlSafety();
+  var docs=new DocumentService(new PageFetcher(safety,policy),new ContentExtractor(),new SourceClassifier(policy),safety);
+  var worker=new kr.ac.dongyang.researchboard.search.SearchWorker(repo,provider,docs,new SerperScraper("key",true,true,10,http,new ProviderBudget(db)),policy,10,false);
+  var run=repo.create(topic,"q",provider,"k").run();worker.execute(run.runId());
+  var done=repo.get(run.runId());assertEquals(1,done.processedCount());
+  var page=repo.results(run.runId(),0,10);assertEquals(1,page.items().size());
+  assertEquals("발췌 있음",page.items().get(0).title());assertTrue(page.items().get(0).contentText().startsWith("추출한 본문"));assertEquals("SERPER_SCRAPE",page.items().get(0).extractionReason());
+ }
 }

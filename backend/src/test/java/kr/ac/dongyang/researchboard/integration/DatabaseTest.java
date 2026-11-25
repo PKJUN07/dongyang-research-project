@@ -18,7 +18,7 @@ class DatabaseTest {
         }));
         assertTrue(new TopicRepository(db).list().isEmpty());
         int count=db.read(c->{try(ResultSet r=c.createStatement().executeQuery("SELECT COUNT(*) FROM schema_version")){r.next();return r.getInt(1);}});
-        assertEquals(11,count);
+        assertEquals(12,count);
     }
     @Test void interruptedJobsAreNotReportedSuccessful() {
         Database db=new Database(dir.resolve("recovery.db").toString());
