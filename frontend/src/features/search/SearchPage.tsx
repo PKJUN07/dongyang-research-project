@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { PageHeader } from '../../components/PageHeader';
 import { EmptyState, ErrorState, LoadingState } from '../../components/AsyncState';
@@ -83,14 +83,12 @@ export default function SearchPage() {
   const observations = observed.runId === runId ? observed.entries : [];
   const compact = runId > 0;
   const topicName = topics.data?.find(topic => topic.id === topicId)?.name;
-  const searchButton = <button disabled={busy || !query.trim() || (!searchAllowed && !canResume)}>{busy ? '처리 중…' : !searchAllowed && canResume ? '이전 요청 다시 확인' : '검색하기'}</button>;
+  const searchButton = <button disabled={busy || !query.trim() || (!searchAllowed && !canResume)} title={config.data && !searchAllowed ? reasonLabel[config.data.searchReason] : undefined}>{busy ? '처리 중…' : !searchAllowed && canResume ? '이전 요청 다시 확인' : '검색하기'}</button>;
   const settings = <div className="search-form-grid">
     <TopicPanel selectedId={topicId} disabled={busy} onSelect={topic => { setTopicId(topic.id); setQuery(current => current?.trim() ? current : topic.query); }} />
     <div className="search-config">
       {config.isPending && <p className="form-help" role="status">검색 설정을 확인하는 중…</p>}
-      {config.data && <div className="notice search-connection" role="status"><strong>{config.data.externalSearchReady ? 'Serper 실제 검색 요청 가능' : '실제 검색을 사용할 수 없습니다'}</strong><span>{reasonLabel[config.data.searchReason] ?? '검색어·언어·지역이 Serper에 전송됩니다. 설정 확인은 실제 API 응답 성공을 보장하지 않습니다.'}</span><span>오늘 사용 {config.data.attempts} / 일일 상한 {config.data.maximum}회 · 남은 {config.data.remaining}회 · 검색 1회에 최대 {config.data.pagesPerSearch}페이지({config.data.pagesPerSearch * 10}건) 수집{config.data.scrapeAvailable ? ' · 본문 추출 사용 가능' : ''}</span><button type="button" className="button-secondary" disabled={config.isFetching} onClick={() => void config.refetch()}>연결 상태 다시 확인</button></div>}
       {config.isError && <ErrorState title="서버 설정 조회 실패" description={config.error.message} onRetry={() => { void config.refetch(); }} />}
-      {!searchAllowed && <p className="search-config-link"><Link className="text-link" to="/documents">기존 자료 보기 →</Link></p>}
     </div>
   </div>;
   const hasRecent = Boolean(recent.data?.items.length);
