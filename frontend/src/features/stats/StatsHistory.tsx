@@ -18,7 +18,7 @@ function RunRow({ run }: { run: HistoryItem }) {
         <h3>{run.topic} · 검색 #{run.id}</h3>
         <div className="card-tags">
           <Tag tone={statusTone[run.status] ?? 'gray'}>{statusText[run.status] || run.status}</Tag>
-          <Tag tone={run.synthetic ? 'purple' : 'gray'}>{providerLabel(run.provider, run.synthetic)}</Tag>
+          <Tag tone="gray">{providerLabel(run.provider)}</Tag>
         </div>
       </div>
       <p className="stats-run-time">시작 {dateText(run.startedAt)} · 완료 {dateText(run.finishedAt)} (KST)</p>

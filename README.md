@@ -27,8 +27,11 @@
 | 자료 상세 | `/documents/:id` | 검색 요약·공개 본문, AI 구조화 요약(핵심 주장·직접 근거·한계·추론 경계), 읽기·보관·주제 연결, 메모 |
 | (보조) | `/documents`, `/brief` | 전체 수집 자료 목록, 분석 완료 자료를 최대 5개까지 묶는 자료 요약 모음 |
 
-- 기본 검색 모드는 합성 테스트(`fake`)입니다. 외부 검색 호출 없이 합성 결과만 만듭니다.
-- 합성 자료는 목록에서 기본으로 숨겨집니다. 화면의 "테스트 자료 포함"으로 볼 수 있습니다.
+- 검색은 Serper 실제 검색만 사용합니다. 예전의 합성 테스트(`fake`) 모드와 테스트 자료는 폐기되었으며, 기존 DB에 남아 있던 합성 자료도 첫 실행 시 자동으로 삭제됩니다.
+- `SERPER_API_KEY`를 설정해 두면 실행기가 외부 검색 승인과 검토된 출처 정책을 함께 켭니다.
+- Serper 호출 상한은 **하루(한국 시간) 200회**가 기본이며 자정에 다시 채워집니다(`MAX_PROVIDER_ATTEMPTS`). 검색 1회는 결과 페이지를 최대 3개(30건)까지 이어 받고(`SERPER_PAGES`, 1~5), 페이지마다 1회씩 차감합니다.
+- 자료 상세의 AI 요약은 본문이 없으면 먼저 본문을 확보합니다. 순서: 검토된 출처 직접 요청 → Serper 본문 추출(`SERPER_SCRAPE_ENABLED`, 호출 1회 차감) → 사용자가 원문 본문 붙여넣기. 본문 확보가 끝내 안 되면 같은 자료가 여러 검색에서 받은 발췌문을 모두 합쳐 간단 정리합니다.
+- 자료 요약 모음은 고른 자료끼리 **공통점 / 차이·고유 내용 / 원문 확인 필요**로 나눠 다시 정리하며, 질문을 적으면 근거가 있는 답만 보여 줍니다. 모든 문장은 근거 자료 번호와 원래 주장·인용으로 되짚을 수 있습니다.
 
 ## 실행 설정과 로그
 
@@ -48,8 +51,8 @@ $jdk = (Get-ChildItem 'C:\Program Files\Eclipse Adoptium','C:\Program Files\Java
 $env:JAVA_HOME = $jdk; $env:Path = "$jdk\bin;$env:Path"
 
 cd backend
-$env:RESEARCH_PROVIDER = 'fake'
-$env:EXTERNAL_SEARCH_APPROVED = 'false'
+$env:SERPER_API_KEY = '<Serper 키>'   # 실제 검색에 필요
+$env:EXTERNAL_SEARCH_APPROVED = 'true'
 $env:RESEARCH_DB_PATH = "$PWD\..\runtime\research.db"
 .\mvnw.cmd spring-boot:run "-Dspring-boot.run.arguments=--server.port=18089 --research.ai-model=qwen3-vl:8b-instruct --research.ai-timeout-seconds=300"
 ```

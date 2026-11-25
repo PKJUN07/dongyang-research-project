@@ -144,3 +144,17 @@
   .det-page .det-ai-actions > button { flex: 1 1 100%; }
   .det-page .det-ai .det-ai-box-pending { min-height: 205px; }
 }
+
+/* 본문 미확보 안내와 본문 확보 동선(AI 요약 패널) */
+.det-page .det-ai-scope { display: grid; gap: 8px; margin: 12px 0 0; padding: 12px 14px; border-left: 3px solid var(--orange); border-radius: var(--radius-sm); background: var(--warning-bg); font-size: 13px; line-height: 1.7; }
+.det-page .det-ai-scope p { margin: 0; }
+.det-page .det-ai-scope strong { color: var(--orange-text); }
+.det-page .det-ai-scope > .button-quiet { justify-self: start; min-height: 36px; padding: 4px 0; color: var(--primary-text); font-size: 13px; font-weight: 700; text-decoration: underline; }
+.det-page .det-ai-snippet-badge { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: 12px 0 0; color: var(--text-muted); font-size: 12.5px; line-height: 1.6; }
+.det-page .det-ai-snippet-badge span { padding: 2px 8px; border-radius: 6px; color: var(--orange-text); background: var(--orange-soft); font-weight: 800; }
+.manual-body { display: grid; gap: 6px; margin: 4px 0 0; }
+.manual-body label { font-size: 13px; font-weight: 700; }
+.manual-body textarea { width: 100%; min-height: 140px; resize: vertical; font: inherit; font-size: 13.5px; line-height: 1.7; }
+.manual-body-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
+.manual-body-actions .form-help { margin: 0; }
+.body-fetch-panel > .button-secondary { justify-self: start; margin-top: 4px; }

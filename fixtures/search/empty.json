@@ -1,9 +1,0 @@
-{
-  "synthetic": true,
-  "runId": "fixture-empty-001",
-  "query": "결과 없는 시험 검색어",
-  "provider": "FAKE",
-  "locale": "ko-KR",
-  "status": "SUCCEEDED",
-  "results": []
-}

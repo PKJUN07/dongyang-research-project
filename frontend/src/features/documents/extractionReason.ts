@@ -1,6 +1,5 @@
 /** 본문 확보(extractionReason) 서버 코드를 사용자용 한국어로 바꾼다. 코드가 아닌 문장이면 그대로 쓴다. */
 const labels: Record<string, string> = {
-  SYNTHETIC_ACCESS_DENIED: '테스트(합성) 자료라 본문 접근을 막아 둔 시험 항목입니다.',
   LOGIN_OR_PAYWALL: '로그인이나 유료 구독이 필요한 페이지라 본문을 읽지 못했습니다.',
   UNSAFE_OR_INVALID_URL: '안전하지 않거나 올바르지 않은 주소라 본문을 요청하지 않았습니다.',
   UNSAFE_URL: '안전하지 않은 주소라 본문을 요청하지 않았습니다.',
@@ -19,6 +18,16 @@ const labels: Record<string, string> = {
   FETCH_ON_APPLY: '본문 수집이 허용된 출처입니다. 공개 본문 탭에서 가져올 수 있습니다.',
   NO_BODY_REQUEST: '본문 자동 수집 대상으로 승인되지 않은 출처라 검색 요약만 저장했습니다.',
   POLICY_NOT_APPROVED: '본문 자동 수집 대상으로 승인되지 않은 출처입니다.',
+  SERPER_SCRAPE: 'Serper 본문 추출로 공개 본문을 확보했습니다.',
+  USER_PROVIDED: '원문에서 직접 복사해 붙여 넣은 본문입니다.',
+  SCRAPE_UNAVAILABLE: 'Serper 본문 추출을 사용할 수 없습니다(키·승인 설정 확인).',
+  SCRAPE_FAILED: 'Serper 본문 추출 요청이 실패했습니다.',
+  SCRAPE_INVALID_RESPONSE: 'Serper 본문 추출 응답을 해석하지 못했습니다.',
+  BUDGET_EXHAUSTED: '오늘의 Serper 호출 상한을 모두 사용했습니다. 내일 다시 시도하거나 본문을 직접 붙여 넣으세요.',
+  PROVIDER_COOLDOWN: 'Serper 요청 제한으로 잠시 대기 중입니다. 잠시 후 다시 시도하세요.',
+  PROVIDER_RATE_LIMIT: 'Serper 요청 제한에 걸렸습니다. 잠시 후 다시 시도하세요.',
+  PROVIDER_AUTH: 'Serper API 키 인증에 실패했습니다.',
+  PROVIDER_TIMEOUT: 'Serper 응답 시간이 초과되었습니다.',
 };
 
 const codePattern = /^[A-Z][A-Z0-9_]+$/;

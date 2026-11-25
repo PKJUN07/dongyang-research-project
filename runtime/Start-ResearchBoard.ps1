@@ -114,6 +114,14 @@ try {
         if (-not $env:RESEARCH_DB_PATH) { $env:RESEARCH_DB_PATH = Join-Path $PSScriptRoot 'research.db' }
         if (-not $env:RESEARCH_AI_MODEL) { $env:RESEARCH_AI_MODEL = 'qwen3-vl:8b-instruct' }
         if (-not $env:RESEARCH_AI_TIMEOUT_SECONDS) { $env:RESEARCH_AI_TIMEOUT_SECONDS = '300' }
+        # 합성(fake) 검색 모드는 폐기되었습니다. 예전 설정이 남아 있어도 실제 검색(Serper)으로 시작합니다.
+        if ($env:RESEARCH_PROVIDER -eq 'fake') { Remove-Item -LiteralPath 'Env:RESEARCH_PROVIDER' }
+        # Serper 키를 설정해 두었다면 외부 검색을 승인된 것으로 보고, 검토된 출처 정책을 사용합니다.
+        if ($env:SERPER_API_KEY -and -not $env:EXTERNAL_SEARCH_APPROVED) { $env:EXTERNAL_SEARCH_APPROVED = 'true' }
+        if (-not $env:SOURCE_POLICY_PATH) {
+            $reviewedPolicy = Join-Path $root 'docs\source-policy.reviewed.json'
+            if (Test-Path -LiteralPath $reviewedPolicy -PathType Leaf) { $env:SOURCE_POLICY_PATH = $reviewedPolicy }
+        }
         $backend = Start-ServiceJob Backend "$root\backend" '.\mvnw.cmd' @('spring-boot:run')
         $jobs += $backend
         Wait-Service { Test-Backend $backendUrl } $backend 300

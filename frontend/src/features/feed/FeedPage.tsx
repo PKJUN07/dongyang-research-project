@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { keepPreviousData, useQueries, useQuery } from '@tanstack/react-query';
-import type { DocumentResult } from '../../api/client';
 import { Link, useSearchParams } from 'react-router-dom';
 import { request } from '../../api/client';
 import type { ResultPage } from '../../api/client';
@@ -25,7 +24,6 @@ export default function FeedPage() {
 
   const topicId = /^\d+$/.test(params.get('topicId') ?? '') ? params.get('topicId')! : '';
   const sort = (sortOptions.some(option => option.value === params.get('sort')) ? params.get('sort') : 'FETCHED_DESC') as FeedSort;
-  const includeSynthetic = params.get('includeSynthetic') === 'true';
   const tab = (tabValues.includes(params.get('tab') as FeedTab) ? params.get('tab') : 'ALL') as FeedTab;
   const requestedPage = Number(params.get('page'));
   const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 0;
@@ -40,7 +38,7 @@ export default function FeedPage() {
 
   const topics = useTopics();
   const topicName = topics.data?.find(topic => String(topic.id) === topicId)?.name;
-  const base = baseFilter(topicId, includeSynthetic);
+  const base = baseFilter(topicId);
   const counts: Record<FeedTab, ReturnType<typeof useDocumentCount>> = {
     ALL: useDocumentCount(base),
     OFFICIAL: useDocumentCount({ ...base, ...tabFilter('OFFICIAL') }),
@@ -49,13 +47,6 @@ export default function FeedPage() {
     UNREAD: useDocumentCount({ ...base, ...tabFilter('UNREAD') }),
   };
   const countError = tabValues.some(value => counts[value].isError);
-  // 합성 제외 상태에서 숨겨진 합성 자료 수(실제 API 개수). 포함 상태에서는 표시하지 않는다.
-  const topicOnly: Record<string, string> = topicId ? { topicId } : {};
-  const hiddenAll = useDocumentCount({ ...topicOnly, synthetic: 'true' });
-  const hiddenInTab = useDocumentCount({ ...topicOnly, ...tabFilter(tab), synthetic: 'true' });
-  const hiddenAllCount = includeSynthetic ? 0 : hiddenAll.data ?? 0;
-  const hiddenTabCount = includeSynthetic ? 0 : hiddenInTab.data ?? 0;
-  const showSynthetic = () => change({ includeSynthetic: 'true' });
 
   const listParams = new URLSearchParams({ ...base, ...tabFilter(tab), sort, page: String(page), size: String(PAGE_SIZE) });
   const list = useQuery({
@@ -96,20 +87,11 @@ export default function FeedPage() {
   const lastBrief = useLastBrief();
   const briefEntries = lastBrief.query.data?.snapshot ?? [];
   const briefNumbers = new Map(briefEntries.map((entry, index) => [entry.documentId, index + 1]));
-  const briefDocs = useQueries({
-    queries: (includeSynthetic ? [] : briefEntries).map(entry => ({
-      queryKey: ['document', String(entry.documentId), null],
-      queryFn: ({ signal }: { signal: AbortSignal }) => request<DocumentResult>(`/documents/${entry.documentId}`, undefined, signal),
-      retry: false,
-    })),
-  });
-  const hiddenBriefCount = briefDocs.filter(result => result.data?.synthetic).length;
 
   const readinessState = list.isPending ? 'pending' : list.isError && !list.data ? 'list-error' : ids.length === 0 ? 'empty' : readiness.isError && !readiness.data ? 'error' : readiness.data ? 'ready' : 'pending';
   const activeFilters = [
     topicId && `주제: ${topicName ?? `#${topicId}`}`,
     sort !== 'FETCHED_DESC' && `정렬: ${sortOptions.find(option => option.value === sort)?.label}`,
-    includeSynthetic && '테스트(합성) 자료 포함',
   ].filter(Boolean) as string[];
 
   let listBody;
@@ -117,15 +99,6 @@ export default function FeedPage() {
     listBody = <><p className="visually-hidden" role="status">피드 자료를 불러오는 중입니다.</p><Skeleton lines={5} /><Skeleton lines={5} /></>;
   } else if (list.isError && !list.data) {
     listBody = <ErrorState title="피드 자료를 불러오지 못했습니다" description={list.error.message} onRetry={() => { void list.refetch(); }} />;
-  } else if (items.length === 0 && hiddenTabCount > 0) {
-    listBody = (
-      <div className="state-card feed-empty">
-        <span className="state-icon" aria-hidden="true">◇</span>
-        <h2>테스트(합성) 자료 {hiddenTabCount}건이 숨겨져 있습니다</h2>
-        <p>지금은 실제 수집 자료만 표시합니다. 합성 자료는 기능 확인용 테스트 데이터입니다.</p>
-        <button type="button" onClick={showSynthetic}>테스트 자료 포함해서 보기</button>
-      </div>
-    );
   } else if (items.length === 0) {
     listBody = (
       <div className="state-card feed-empty">
@@ -191,12 +164,8 @@ export default function FeedPage() {
               {sortOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
             </select>
           </label>
-          <label className="feed-check">
-            <input type="checkbox" checked={includeSynthetic} onChange={event => change({ includeSynthetic: event.target.checked ? 'true' : '' })} />
-            테스트(합성) 자료 포함
-          </label>
           {activeFilters.length > 0 && (
-            <button type="button" className="button-quiet" onClick={() => change({ topicId: '', sort: '', includeSynthetic: '' })}>조건 초기화</button>
+            <button type="button" className="button-quiet" onClick={() => change({ topicId: '', sort: '' })}>조건 초기화</button>
           )}
         </section>
       )}
@@ -204,22 +173,9 @@ export default function FeedPage() {
 
       <div className="layout-main-aside">
         <div className="stack">
-          <FeedBriefCard lastBrief={lastBrief} detailSearch={detailSearch} includeSynthetic={includeSynthetic}
-            hiddenSyntheticCount={hiddenBriefCount} onIncludeSynthetic={showSynthetic} />
+          <FeedBriefCard lastBrief={lastBrief} detailSearch={detailSearch} />
           <section className="card feed-list" aria-labelledby="feed-list-title">
             <h2 className="visually-hidden" id="feed-list-title">피드 목록</h2>
-            {hiddenAllCount > 0 && items.length > 0 && (
-              <div className="feed-inline-note">
-                <span>테스트(합성) 자료 {hiddenAllCount}건은 숨겨져 있습니다.</span>
-                <button type="button" className="button-secondary" onClick={showSynthetic}>테스트 자료 포함</button>
-              </div>
-            )}
-            {includeSynthetic && (
-              <div className="feed-inline-note">
-                <span>테스트(합성) 자료를 포함해 표시하고 있습니다.</span>
-                <button type="button" className="button-secondary" onClick={() => change({ includeSynthetic: '' })}>실제 자료만 보기</button>
-              </div>
-            )}
             <ChipTabs ariaLabel="출처 유형과 읽기 상태로 보기" value={tab} onChange={value => change({ tab: value === 'ALL' ? '' : value })}
               items={tabValues.map(value => ({ value, label: tabLabels[value], count: counts[value].data }))} />
             {countError && <p className="feed-field-help" role="alert">일부 탭의 자료 수를 불러오지 못했습니다.</p>}

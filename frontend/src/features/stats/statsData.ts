@@ -29,14 +29,13 @@ export function dateRange(from: string, to: string): string[] {
 
 /** 이력 전체 합산. raw가 null(미기록)인 작업은 원시 합계에서 빼고 개수를 따로 센다. */
 export function sumHistory(items: HistoryItem[]) {
-  let raw = 0, rawMissing = 0, created = 0, duplicates = 0, synthetic = 0;
+  let raw = 0, rawMissing = 0, created = 0, duplicates = 0;
   for (const item of items) {
     if (item.raw === null || item.raw === undefined) rawMissing++; else raw += item.raw;
     created += item.created;
     duplicates += item.duplicates;
-    if (item.synthetic) synthetic++;
   }
-  return { raw, rawMissing, created, duplicates, synthetic };
+  return { raw, rawMissing, created, duplicates };
 }
 
 /** SUCCEEDED/PARTIAL 작업 중 가장 늦은 finishedAt. 없으면 undefined. */
@@ -69,9 +68,8 @@ export function buildFlow(from: string, to: string, overview: StatsOverview | un
   return [...rows.values()];
 }
 
-/** 검색 제공자 내부 이름(FAKE/SERPER)을 사용자용 이름으로. */
-export function providerLabel(provider: string, synthetic: boolean): string {
-  if (synthetic || provider === 'FAKE') return '합성 테스트';
+/** 검색 제공자 내부 이름(SERPER 등)을 사용자용 이름으로. */
+export function providerLabel(provider: string): string {
   if (provider === 'SERPER') return '실제 검색 · Serper';
   return '실제 검색';
 }
@@ -87,7 +85,7 @@ const errorText: Record<string, string> = {
   PROVIDER_KEY_MISSING: '서버에 검색 API 키가 설정되지 않았습니다.',
   PROVIDER_COOLDOWN: '검색 제공자 요청 제한 대기 중이었습니다.',
   APPROVAL_REQUIRED: '외부 검색 호출 승인이 설정되지 않았습니다.',
-  BUDGET_EXHAUSTED: '승인된 누적 검색 횟수를 모두 사용했습니다.',
+  BUDGET_EXHAUSTED: '오늘의 Serper 호출 상한을 모두 사용했습니다.',
   QUEUE_FULL: '검색 대기열이 가득 차 처리하지 못했습니다.',
   INTERRUPTED: '서버 재시작 등으로 처리가 중단되었습니다.',
   PROCESSING_FAILED: '검색 결과를 처리하는 중 오류가 발생했습니다.',

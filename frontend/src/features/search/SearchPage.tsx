@@ -67,7 +67,7 @@ export default function SearchPage() {
     onSettled: () => { submitLock.current = false; }, retry: false,
   });
   const busy = create.isPending || (runId > 0 && (run.isPending || activeRun(run.data)));
-  const searchAllowed = Boolean(!config.isError && config.data && (config.data.synthetic || config.data.externalSearchReady));
+  const searchAllowed = Boolean(!config.isError && config.data && config.data.externalSearchReady);
   const pending = create.isError ? create.variables : undefined;
   const canResume = pending?.query === query.trim() && pending.topicId === topicId && Boolean(pending.resolvedTopicId || pending.topicId);
   function submit(event: FormEvent) {
@@ -83,14 +83,14 @@ export default function SearchPage() {
   const observations = observed.runId === runId ? observed.entries : [];
   const compact = runId > 0;
   const topicName = topics.data?.find(topic => topic.id === topicId)?.name;
-  const searchButton = <button disabled={busy || !query.trim() || (!searchAllowed && !canResume)}>{busy ? '처리 중…' : !searchAllowed && canResume ? '이전 요청 다시 확인' : config.data?.synthetic ? '테스트 검색 (외부 호출 없음)' : '검색하기'}</button>;
+  const searchButton = <button disabled={busy || !query.trim() || (!searchAllowed && !canResume)}>{busy ? '처리 중…' : !searchAllowed && canResume ? '이전 요청 다시 확인' : '검색하기'}</button>;
   const settings = <div className="search-form-grid">
     <TopicPanel selectedId={topicId} disabled={busy} onSelect={topic => { setTopicId(topic.id); setQuery(current => current?.trim() ? current : topic.query); }} />
     <div className="search-config">
       {config.isPending && <p className="form-help" role="status">검색 설정을 확인하는 중…</p>}
-      {config.data && <div className="notice search-connection" role="status"><strong>{config.data.synthetic ? '실제 검색 연결 대기 · 테스트 모드' : config.data.externalSearchReady ? 'Serper 실제 검색 요청 가능' : '실제 검색을 사용할 수 없습니다'}</strong><span>{reasonLabel[config.data.searchReason] ?? '검색어·언어·지역이 Serper에 전송됩니다. 설정 확인은 실제 API 응답 성공을 보장하지 않습니다.'}</span><span>앱 누적 사용 {config.data.attempts} / 승인 상한 {config.data.maximum}회 · 남은 {config.data.remaining}회 (하루 기준 아님)</span><button type="button" className="button-secondary" disabled={config.isFetching} onClick={() => void config.refetch()}>연결 상태 다시 확인</button></div>}
+      {config.data && <div className="notice search-connection" role="status"><strong>{config.data.externalSearchReady ? 'Serper 실제 검색 요청 가능' : '실제 검색을 사용할 수 없습니다'}</strong><span>{reasonLabel[config.data.searchReason] ?? '검색어·언어·지역이 Serper에 전송됩니다. 설정 확인은 실제 API 응답 성공을 보장하지 않습니다.'}</span><span>오늘 사용 {config.data.attempts} / 일일 상한 {config.data.maximum}회 · 남은 {config.data.remaining}회 · 검색 1회에 최대 {config.data.pagesPerSearch}페이지({config.data.pagesPerSearch * 10}건) 수집{config.data.scrapeAvailable ? ' · 본문 추출 사용 가능' : ''}</span><button type="button" className="button-secondary" disabled={config.isFetching} onClick={() => void config.refetch()}>연결 상태 다시 확인</button></div>}
       {config.isError && <ErrorState title="서버 설정 조회 실패" description={config.error.message} onRetry={() => { void config.refetch(); }} />}
-      {(!searchAllowed || config.data?.synthetic) && <p className="search-config-link"><Link className="text-link" to="/documents">기존 자료 보기 →</Link></p>}
+      {!searchAllowed && <p className="search-config-link"><Link className="text-link" to="/documents">기존 자료 보기 →</Link></p>}
     </div>
   </div>;
   const hasRecent = Boolean(recent.data?.items.length);
@@ -110,11 +110,11 @@ export default function SearchPage() {
           {config.data && !searchAllowed && <p className="form-help" role="status">{reasonLabel[config.data.searchReason] ?? '실제 검색을 사용할 수 없습니다.'}</p>}
         </form>
         <details className="search-settings">
-          <summary>주제 선택·검색 설정{config.data ? ` · ${providerLabel(config.data.provider, config.data.synthetic)} · 남은 ${config.data.remaining}회` : ''}</summary>
+          <summary>주제 선택·검색 설정{config.data ? ` · ${providerLabel(config.data.provider)} · 남은 ${config.data.remaining}회` : ''}</summary>
           {settings}
         </details>
       </div>
-      : <Card className="search-form-card" title="검색 조건" aside={config.data ? `검색 제공자 · ${providerLabel(config.data.provider, config.data.synthetic)}` : undefined}>
+      : <Card className="search-form-card" title="검색 조건" aside={config.data ? `검색 제공자 · ${providerLabel(config.data.provider)}` : undefined}>
         <form className="search-form" onSubmit={submit}>
           <label htmlFor="search-query">검색어</label><div className="search-controls"><input id="search-query" type="search" readOnly={create.isPending} onKeyDown={e => { if (e.key === 'Enter' && (e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229)) e.preventDefault(); }} maxLength={200} required value={query} onChange={e => setQuery(e.target.value)} placeholder="검색어를 입력하세요" />{searchButton}</div>
           {!topicId && <p className="form-help">주제를 선택하지 않으면 ‘빠른 검색’에 기록합니다.</p>}
