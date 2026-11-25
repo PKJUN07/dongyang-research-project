@@ -133,7 +133,13 @@ try {
         $vite = Join-Path $front 'node_modules\.bin\vite.cmd'
         $python = Get-Command python.exe -ErrorAction SilentlyContinue
         $env:RESEARCH_API_TARGET = $backendUrl
-        if (-not (Test-Path -LiteralPath $vite) -and (Test-Path -LiteralPath "$front\dist\index.html") -and $python -and $python.Source -notlike '*\Microsoft\WindowsApps\*') {
+        # 예전 빌드(dist)는 git pull로 갱신되지 않는다. Node.js가 있으면 항상 소스(Vite)로 띄우고,
+        # Node.js가 없어 dist를 쓸 수밖에 없을 때 소스가 dist보다 새로우면 경고한다.
+        $npm = Get-Command npm.cmd -ErrorAction SilentlyContinue
+        if (-not (Test-Path -LiteralPath $vite) -and -not $npm -and (Test-Path -LiteralPath "$front\dist\index.html") -and $python -and $python.Source -notlike '*\Microsoft\WindowsApps\*') {
+            $built = (Get-Item -LiteralPath "$front\dist\index.html").LastWriteTime
+            $newest = (Get-ChildItem -LiteralPath "$front\src" -Recurse -File | Sort-Object LastWriteTime -Descending | Select-Object -First 1).LastWriteTime
+            if ($newest -gt $built) { Write-Warning '프론트엔드 빌드(frontend\dist)가 소스보다 오래되었습니다. 최신 화면을 보려면 Node.js 22.12 이상을 설치한 뒤 다시 실행하세요.' }
             $frontend = Start-ServiceJob Frontend $PSScriptRoot $python.Source @('serve_frontend.py',"$FrontendPort",$backendUrl)
         } else {
             if (-not (Test-Path -LiteralPath $vite)) {
