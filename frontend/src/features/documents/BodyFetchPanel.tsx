@@ -29,7 +29,7 @@ export function BodyFetchPanel({ id, available, characters = 0 }: { id: number; 
   return <div className="body-fetch-panel"><p>현재는 본문을 읽지 않은 검색 발췌문만 있습니다. 본문을 확보하면 AI가 원문 전체 맥락으로 요약합니다.</p>
     {status.isPending && <p role="status">본문 수집 가능 여부를 확인하고 있습니다.</p>}
     {s?.available ? <p>본문이 이미 확보되었습니다. <button onClick={() => void status.refetch()}>본문 정보 새로 불러오기</button></p>
-      : s?.canFetch ? <><p>{s.reason === 'READY_TO_SCRAPE' ? '수집 정책에 등록되지 않은 출처라 Serper 본문 추출로 공개 본문을 가져옵니다(오늘의 Serper 호출 1회 사용).' : '이 페이지는 수집 대상으로 검토되었습니다.'}</p>
+      : s?.canFetch ? <><p>{s.reason === 'READY_TO_FETCH_PUBLIC' ? '사이트의 robots.txt가 허용하면 원문 페이지에서 본문을 직접 가져오고, 실패하면 Serper 본문 추출을 시도합니다.' : s.reason === 'READY_TO_SCRAPE' ? '수집 정책에 등록되지 않은 출처라 Serper 본문 추출로 공개 본문을 가져옵니다(오늘의 Serper 호출 1회 사용).' : '이 페이지는 수집 대상으로 검토되었습니다.'}</p>
         <button disabled={fetchBody.isPending} onClick={submit}>{fetchBody.isPending ? '본문 가져오는 중…' : '공개 본문 가져오기'}</button></>
       : s && <p>이 출처는 자동 본문 수집을 사용할 수 없습니다. 원문에서 본문을 복사해 붙여 넣으면 본문 기반으로 요약할 수 있습니다.</p>}
     {status.isError && <p role="alert">본문 수집 상태를 확인하지 못했습니다. <button onClick={() => void status.refetch()}>다시 확인</button></p>}

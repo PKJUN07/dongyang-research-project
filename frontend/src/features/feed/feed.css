@@ -45,6 +45,9 @@
 .feed-ai-line-ready { background: #f6f3ff; color: var(--text); }
 .feed-ai-link { display: inline-flex; align-items: center; min-height: 32px; margin-left: auto; color: var(--primary-text); font-size: 12.5px; font-weight: 700; text-decoration: none; }
 .feed-ai-link:hover { text-decoration: underline; }
+.feed-ai-run { margin-left: auto; min-height: 34px; padding: 5px 14px; font-size: 12.5px; font-weight: 700; }
+.feed-ai-line .feed-ai-link + .feed-ai-run { margin-left: 0; }
+.feed-ai-error { flex-basis: 100%; color: var(--red-text); font-size: 12.5px; }
 .feed-list-note { margin: 12px 0 0; color: var(--text-muted); font-size: 12.5px; }
 .feed-empty { border: 0; box-shadow: none; }
 .feed-list .skeleton { margin-top: 12px; }
@@ -82,5 +85,5 @@
 @media (max-width: 760px) {
   .feed-brief { padding: 16px; }
   .feed-item-title { font-size: 15.5px; }
-  .feed-ai-link { margin-left: 0; }
+  .feed-ai-link, .feed-ai-run { margin-left: 0; }
 }

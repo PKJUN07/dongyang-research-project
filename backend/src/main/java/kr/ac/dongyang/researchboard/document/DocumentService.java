@@ -43,6 +43,18 @@ public class DocumentService {
         } catch(Exception e) { content=new ContentExtractor.Content("BLOCKED","UNSAFE_OR_INVALID_URL",null,null,null); }
         return new Ingested(hit,classification,content,hash(content.text()),fetchedAt);
     }
+    /**
+     * 수집 정책에 없는 공개 페이지의 본문을 robots.txt를 지키며 직접 받아 온다(무료 경로).
+     * 실패하면 상태·사유만 담은 Content를 돌려준다.
+     */
+    public ContentExtractor.Content fetchPublicBody(String url) {
+        try {
+            PageFetcher.Page page=fetcher.fetchPublic(url);
+            if(!page.status().equals("SUCCESS")) return new ContentExtractor.Content(page.status(),page.reason(),null,null,null);
+            var content=extractor.extract(page.body(),page.contentType(),page.finalUrl());
+            return content.text()==null?content:new ContentExtractor.Content("SUCCESS","PUBLIC_FETCH",content.text(),content.publishedAt(),content.canonicalUrl());
+        } catch(Exception e) { return new ContentExtractor.Content("FAILED","FETCH_FAILED",null,null,null); }
+    }
     /** 본문 SHA-256. 본문이 없으면 null. */
     public static String hash(String text) {
         if(text==null) return null;

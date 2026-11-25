@@ -19,6 +19,8 @@ const labels: Record<string, string> = {
   NO_BODY_REQUEST: '본문 자동 수집 대상으로 승인되지 않은 출처라 검색 요약만 저장했습니다.',
   POLICY_NOT_APPROVED: '본문 자동 수집 대상으로 승인되지 않은 출처입니다.',
   SERPER_SCRAPE: 'Serper 본문 추출로 공개 본문을 확보했습니다.',
+  PUBLIC_FETCH: '원문 페이지에서 본문을 직접 가져왔습니다(robots.txt 허용 확인).',
+  ROBOTS_DISALLOWED: '사이트의 robots.txt가 자동 수집을 허용하지 않아 본문을 직접 가져오지 않았습니다.',
   USER_PROVIDED: '원문에서 직접 복사해 붙여 넣은 본문입니다.',
   SCRAPE_UNAVAILABLE: 'Serper 본문 추출을 사용할 수 없습니다(키·승인 설정 확인).',
   SCRAPE_FAILED: 'Serper 본문 추출 요청이 실패했습니다.',

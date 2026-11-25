@@ -13,37 +13,47 @@ import kr.ac.dongyang.researchboard.provider.SerperScraper;
 /**
  * 자료 본문 확보. 검색 발췌문만으로는 AI가 원문 전체 맥락을 볼 수 없으므로, 다음 순서로 본문을 확보한다.
  * 1) 검토된 수집 정책(source policy)에 등록된 페이지는 직접 요청한다.
- * 2) 등록되지 않았거나 직접 요청이 실패하면 Serper scrape로 공개 본문을 받는다(robots 차단으로 검토된 곳은 제외).
- * 3) 자동 확보가 불가능하면 사용자가 원문에서 복사한 본문을 직접 붙여 넣을 수 있다.
+ * 2) 등록되지 않은 공개 페이지는 robots.txt가 허용하면 직접 요청한다(무료).
+ * 3) 그래도 본문이 없으면 Serper scrape로 공개 본문을 받는다(robots 차단으로 검토된 곳은 제외).
+ * 4) 자동 확보가 불가능하면 사용자가 원문에서 복사한 본문을 직접 붙여 넣을 수 있다.
  */
 @RestController
 @RequestMapping("/api/ai/documents")
 public class BodyController {
  static final int MIN_MANUAL=200, MAX_BODY=100_000;
- private final SearchRepository documents;private final DocumentService service;private final SourcePolicy policy;private final SerperScraper scraper;
- public BodyController(SearchRepository documents,DocumentService service,SourcePolicy policy){this(documents,service,policy,null);}
- @Autowired public BodyController(SearchRepository documents,DocumentService service,SourcePolicy policy,SerperScraper scraper){this.documents=documents;this.service=service;this.policy=policy;this.scraper=scraper;}
+ private final SearchRepository documents;private final DocumentService service;private final SourcePolicy policy;private final SerperScraper scraper;private final boolean publicFetch;
+ public BodyController(SearchRepository documents,DocumentService service,SourcePolicy policy){this(documents,service,policy,null,false);}
+ public BodyController(SearchRepository documents,DocumentService service,SourcePolicy policy,SerperScraper scraper){this(documents,service,policy,scraper,false);}
+ @Autowired public BodyController(SearchRepository documents,DocumentService service,SourcePolicy policy,SerperScraper scraper,@org.springframework.beans.factory.annotation.Value("${research.public-fetch-enabled:true}") boolean publicFetch){this.documents=documents;this.service=service;this.policy=policy;this.scraper=scraper;this.publicFetch=publicFetch;}
 
  private Optional<SourcePolicy.Rule> rule(SearchRepository.Card d){try{return policy.find(URI.create(d.url()));}catch(Exception e){return Optional.empty();}}
  private boolean fetchAllowed(SearchRepository.Card d){return !d.synthetic()&&rule(d).map(SourcePolicy.Rule::fetchAllowed).orElse(false);}
  /** robots.txt 등으로 수집 금지가 확인된 출처는 Serper scrape도 쓰지 않는다. */
- private boolean scrapeAllowed(SearchRepository.Card d){return !d.synthetic()&&scraper!=null&&scraper.available()&&rule(d).map(r->r.fetchAllowed()||!r.permissionNote().startsWith("ROBOTS_DISALLOWED:")).orElse(true);}
+ private boolean scrapeAllowed(SearchRepository.Card d){return !d.synthetic()&&scraper!=null&&scraper.available()&&notRobotsBlocked(d);}
+ private boolean notRobotsBlocked(SearchRepository.Card d){return rule(d).map(r->r.fetchAllowed()||!r.permissionNote().startsWith("ROBOTS_DISALLOWED:")).orElse(true);}
+ /** 정책에 없는 공개 페이지 직접 요청(robots.txt 확인). 정책에 등록된 출처는 정책을 따른다. */
+ private boolean publicAllowed(SearchRepository.Card d){return publicFetch&&!d.synthetic()&&rule(d).isEmpty();}
 
  @GetMapping("/{id}/body-status") public Map<String,Object> status(@PathVariable long id){
   var d=documents.document(id);boolean exists=d.contentText()!=null&&!d.contentText().isBlank();
-  boolean fetch=fetchAllowed(d),scrape=scrapeAllowed(d);
+  boolean fetch=fetchAllowed(d)||publicAllowed(d),scrape=scrapeAllowed(d);
   return Map.of("available",exists,"characters",exists?d.contentText().length():0,"canFetch",(fetch||scrape)&&!exists,"canScrape",scrape&&!exists,"canPaste",!exists&&!d.synthetic(),
-   "reason",exists?"BODY_AVAILABLE":fetch?"READY_TO_FETCH":scrape?"READY_TO_SCRAPE":"POLICY_NOT_APPROVED");
+   "reason",exists?"BODY_AVAILABLE":fetchAllowed(d)?"READY_TO_FETCH":publicAllowed(d)?"READY_TO_FETCH_PUBLIC":scrape?"READY_TO_SCRAPE":"POLICY_NOT_APPROVED");
  }
 
  @PostMapping("/{id}/body") public synchronized Map<String,Object> fetch(@PathVariable long id){
   var d=documents.document(id);if(d.contentText()!=null&&!d.contentText().isBlank())return Map.of("status","EXISTS","characters",d.contentText().length());
-  boolean fetch=fetchAllowed(d),scrape=scrapeAllowed(d);
-  if(!fetch&&!scrape)throw new ApiException(409,"BODY_NOT_APPROVED","이 출처는 자동 본문 수집 대상이 아닙니다. 원문에서 본문을 복사해 직접 붙여 넣을 수 있습니다.");
+  boolean fetch=fetchAllowed(d),open=publicAllowed(d),scrape=scrapeAllowed(d);
+  if(!fetch&&!open&&!scrape)throw new ApiException(409,"BODY_NOT_APPROVED","이 출처는 자동 본문 수집 대상이 아닙니다. 원문에서 본문을 복사해 직접 붙여 넣을 수 있습니다.");
   DocumentService.Ingested direct=null;
   if(fetch){
    direct=service.ingest(new SearchProvider.Hit(d.title(),d.url(),d.snippet(),d.rank()),false);
-   if("SUCCESS".equals(direct.content().status())||!scrape){documents.applyReview(id,direct);return response(direct.content());}
+   if("SUCCESS".equals(direct.content().status())||(!scrape&&!open)){documents.applyReview(id,direct);return response(direct.content());}
+  }
+  if(open){
+   var content=service.fetchPublicBody(d.url());
+   if("SUCCESS".equals(content.status())){store(d,content);return response(content);}
+   if(!scrape)return response(content);
   }
   var scraped=scraper.scrape(d.url());
   if("SUCCESS".equals(scraped.status())){var content=new ContentExtractor.Content("SUCCESS","SERPER_SCRAPE",scraped.text(),null,null);store(d,content);return response(content);}
