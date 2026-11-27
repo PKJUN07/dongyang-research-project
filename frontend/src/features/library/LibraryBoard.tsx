@@ -100,7 +100,7 @@ export function LibraryBoard({ manageOpen }: { manageOpen: boolean }) {
       </div>
       <div className="lib-scope">
         {selectedTopic && <Tag tone="purple">주제: {topicList.find(t => String(t.id) === selectedTopic)?.name ?? `#${selectedTopic}`}</Tag>}
-        {chip === 'custom' && <Tag tone="orange">상세 필터의 읽기 조건 적용 중</Tag>}
+        {chip === 'custom' && <Tag tone="orange">복합 읽기 조건 적용 중</Tag>}
         {(total.isError || unread.isError || later.isError || favorite.isError) && <span className="lib-count-error">일부 개수를 불러오지 못했습니다.</span>}
         <span className="lib-scope-status" role="status">{list.isFetching && list.data ? '목록 갱신 중…' : list.data ? `조건에 맞는 자료 ${list.data.totalElements.toLocaleString()}건` : ''}</span>
       </div>

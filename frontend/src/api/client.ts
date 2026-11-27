@@ -1,19 +1,19 @@
 export type Topic = { id: number; name: string; query: string; createdAt: string };
 export type Run = {
-  runId: number; topicId: number; query: string; provider: string; synthetic: boolean;
+  runId: number; topicId: number; query: string; provider: string;
   status: 'QUEUED' | 'RUNNING' | 'SUCCEEDED' | 'PARTIAL' | 'FAILED';
   discoveredCount: number; processedCount: number; failureCount: number; errorCode: string | null;
 };
 export type DocumentResult = {
   documentId: number; title: string; url: string; snippet: string; rank: number;
   sourceType: 'OFFICIAL' | 'USER' | 'OTHER'; classificationReason: string;
-  publishedAt: string | null; synthetic: boolean;
+  publishedAt: string | null;
   extractionStatus: 'SUCCESS' | 'METADATA_ONLY' | 'BLOCKED' | 'FAILED';
   extractionReason: string | null; contentText: string | null; fetchedAt: string | null; classifiedAt: string | null;
   domain: string; retrievedAt: string; contentVersion: number; duplicateCandidateCount: number; readingStatus: 'UNREAD' | 'READING' | 'READ'; saved: boolean; favorite: boolean; readLater: boolean;
 };
 export type ResultPage = { items: DocumentResult[]; totalElements: number; page: number; size: number; totalPages: number };
-export type Config = { provider: string; synthetic: boolean; aiEnabled: boolean; externalSearchReady: boolean; searchReason: string; attempts: number; maximum: number; remaining: number; pagesPerSearch: number; scrapeAvailable: boolean; budgetWindow: string };
+export type Config = { provider: string; aiEnabled: boolean; externalSearchReady: boolean; searchReason: string; attempts: number; maximum: number; remaining: number; pagesPerSearch: number; scrapeAvailable: boolean; budgetWindow: string };
 export class ApiError extends Error {
   code: string;
   readonly status?: number;

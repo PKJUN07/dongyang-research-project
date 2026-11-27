@@ -5,14 +5,14 @@ import type { Config, ResultPage, SourceType, Topic } from './client';
 
 export type StatsOverview = {
   from: string; to: string; timezone: string;
-  total: number; read: number; saved: number; favorite: number; readLater: number; synthetic: number; readPercent: number;
+  total: number; read: number; saved: number; favorite: number; readLater: number; readPercent: number;
   daily: { date: string; count: number }[];
   sources: { type: SourceType; count: number }[];
   readingCounts: { status: 'UNREAD' | 'READING' | 'READ'; count: number }[];
 };
 /** /api/stats/history 항목. id는 검색 세션(runId). raw/excluded는 기록되지 않았으면 null. */
 export type HistoryItem = {
-  id: number; topic: string; provider: string; synthetic: boolean; status: string;
+  id: number; topic: string; query: string; provider: string; status: string;
   startedAt: string; finishedAt: string | null; errorCode: string | null;
   raw: number | null; excluded: number | null; valid: number; unique: number;
   created: number; existing: number; duplicates: number; bodyFailures: number;

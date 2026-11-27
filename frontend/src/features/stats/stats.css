@@ -54,6 +54,7 @@
 .stats-run:first-child { border-top: 0; padding-top: 4px; }
 .stats-run-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
 .stats-run-head h3 { margin: 0; font-size: 15px; font-weight: 800; overflow-wrap: anywhere; word-break: keep-all; }
+.stats-run-head h3.stats-run-query { font-size: 16.5px; color: var(--text); }
 .stats-run-time, .stats-run-note { margin: 0; color: var(--text-muted); font-size: 12.5px; line-height: 1.7; overflow-wrap: anywhere; }
 .stats-run-counts { display: flex; flex-wrap: wrap; gap: 4px 18px; margin: 2px 0 0; color: var(--text-sub); font-size: 13.5px; }
 .stats-run-counts strong { color: var(--text); font-variant-numeric: tabular-nums; }

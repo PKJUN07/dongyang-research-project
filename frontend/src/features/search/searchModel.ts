@@ -73,7 +73,7 @@ export function buildSteps(run: RunDetail, history: HistoryLookup, health: { dat
 
   const receive: Step = {
     key: 'receive', title: `${provider} 검색 결과 수신`,
-    description: status === 'FAILED' && !received ? failText : run.synthetic ? '외부 호출 없이 합성 테스트 결과를 만듭니다' : '검색어를 검색 제공자에 보내고 결과를 받습니다',
+    description: status === 'FAILED' && !received ? failText : '검색어를 검색 제공자에 보내고 결과를 받습니다',
     state: status === 'QUEUED' ? 'waiting' : status === 'RUNNING' ? 'active' : received ? 'done' : 'error',
     meta: finished ? `발견 ${item?.raw ?? run.discoveredCount}건` : status === 'RUNNING' ? '수신 중' : status === 'FAILED' ? (received ? `원시 ${item?.raw}건` : '실패') : '대기',
   };

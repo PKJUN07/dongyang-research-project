@@ -8,8 +8,6 @@
 .document-filters .form-help { grid-column: 1/-1; }
 .filter-primary { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 14px; }
 .filter-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; }
-.filter-advanced { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 14px; padding-top: 18px; border-top: 1px solid var(--line); }
-.filter-advanced[hidden] { display: none; }
 .title-search { display: flex; align-items: end; gap: 10px; min-width: 0; }
 .title-search label { flex: 1; min-width: 0; }
 .title-search button { flex: none; white-space: nowrap; }
@@ -65,7 +63,6 @@
 @media (max-width: 760px) {
   .document-filters { padding: 16px 14px 12px; }
   .filter-primary { grid-template-columns: 1fr 1fr; gap: 12px; }
-  .filter-advanced { grid-template-columns: 1fr; gap: 12px; }
   .filter-title, .title-search { grid-column: 1/-1; }
   .filter-actions { gap: 4px; }
   .filter-actions button { padding: 9px 8px; font-size: 12px; }

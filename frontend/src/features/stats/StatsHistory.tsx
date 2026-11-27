@@ -15,9 +15,10 @@ function RunRow({ run }: { run: HistoryItem }) {
   return (
     <li className="stats-run">
       <div className="stats-run-head">
-        <h3>{run.topic} · 검색 #{run.id}</h3>
+        <h3 className="stats-run-query" title={run.query}>“{run.query.trim() || run.topic}”</h3>
         <div className="card-tags">
           <Tag tone={statusTone[run.status] ?? 'gray'}>{statusText[run.status] || run.status}</Tag>
+          {run.topic !== '빠른 검색' && <Tag tone="purple">주제 · {run.topic}</Tag>}
           <Tag tone="gray">{providerLabel(run.provider)}</Tag>
         </div>
       </div>
