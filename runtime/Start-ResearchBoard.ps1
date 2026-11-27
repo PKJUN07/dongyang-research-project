@@ -131,9 +131,30 @@ function Get-OllamaCommand {
     $local = "$env:LOCALAPPDATA\Programs\Ollama\ollama.exe"
     if (Test-Path -LiteralPath $local) { return ,@($local) }
     if (Get-Command wsl.exe -ErrorAction SilentlyContinue) {
-        & wsl.exe --exec sh -c 'command -v ollama' *> $null
-        if ($LASTEXITCODE -eq 0) { return ,@('wsl.exe','--exec','ollama') }
+        # WSL 배포판이 없으면 wsl.exe가 오류를 내므로, 그 경우는 'WSL에 Ollama 없음'으로 본다.
+        $ErrorActionPreference = 'Continue'
+        try {
+            & wsl.exe --exec sh -c 'command -v ollama' *> $null
+            if ($LASTEXITCODE -eq 0) { return ,@('wsl.exe','--exec','ollama') }
+        } catch { }
     }
+}
+
+function Set-SerperKey {
+    # 키는 저장소에 넣지 않고 이 PC의 사용자 환경 변수에만 저장한다.
+    if (-not $env:SERPER_API_KEY) {
+        $saved = [Environment]::GetEnvironmentVariable('SERPER_API_KEY','User')
+        if (-not $saved) { $saved = [Environment]::GetEnvironmentVariable('SERPER_API_KEY','Machine') }
+        if ($saved) { $env:SERPER_API_KEY = $saved }
+    }
+    if ($env:SERPER_API_KEY) { Write-Host 'Serper API 키 확인: 설정됨'; return }
+    Write-Host 'Serper API 키가 없습니다. 실제 검색에 필요합니다(https://serper.dev 에서 발급).'
+    $key = "$(Read-Host 'Serper API 키를 붙여 넣고 Enter (건너뛰려면 그냥 Enter)')".Trim()
+    if ($key) {
+        [Environment]::SetEnvironmentVariable('SERPER_API_KEY', $key, 'User')
+        $env:SERPER_API_KEY = $key
+        Write-Host 'Serper API 키를 이 PC의 사용자 환경 변수에 저장했습니다. 다음부터는 묻지 않습니다.'
+    } else { Write-Warning 'Serper API 키 없이 시작합니다. 새 검색은 할 수 없고 저장된 자료만 볼 수 있습니다.' }
 }
 
 function Wait-Ollama($seconds) {
@@ -186,6 +207,7 @@ try {
     if (-not (Test-Backend $backendUrl)) {
         Assert-PortFree $BackendPort
         Set-Jdk
+        Set-SerperKey
         $env:SERVER_PORT = "$BackendPort"
         if (-not $env:RESEARCH_DB_PATH) { $env:RESEARCH_DB_PATH = Join-Path $PSScriptRoot 'research.db' }
         if (-not $env:RESEARCH_AI_TIMEOUT_SECONDS) { $env:RESEARCH_AI_TIMEOUT_SECONDS = '300' }
