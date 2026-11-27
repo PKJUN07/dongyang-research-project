@@ -84,7 +84,9 @@ public final class BriefSynthesis {
   return out;
  }
  private static boolean blank(JsonNode item,String field){return !item.path(field).isString()||item.path(field).asText().isBlank();}
- private static String clip(String value,int max){return value.length()<=max?value:value.substring(0,value.offsetByCodePoints(0,Math.min(max,value.codePointCount(0,value.length()))));}
+ /** 모델이 문장에 섞어 쓴 내부 근거 번호 "(c1, c3)"·"c2" 표기를 지운다. 근거는 refs로 따로 보여 준다. */
+ static String plain(String value){return value.replaceAll("\\s*[\\(\\[]\\s*c\\d+(\\s*[,·]\\s*c\\d+)*\\s*[\\)\\]]","").replaceAll("\\bc\\d+\\b","").replaceAll("\\s{2,}"," ").strip();}
+ private static String clip(String raw,int max){String value=plain(raw);return value.length()<=max?value:value.substring(0,value.offsetByCodePoints(0,Math.min(max,value.codePointCount(0,value.length()))));}
  private static List<Claim> refs(JsonNode ids,List<Claim> claims){
   List<Claim> refs=new ArrayList<>();if(!ids.isArray())return refs;
   for(var id:ids){if(!id.isIntegralNumber())continue;int i=id.asInt(-1);if(i<0||i>=claims.size())continue;var c=claims.get(i);if(!refs.contains(c))refs.add(c);}

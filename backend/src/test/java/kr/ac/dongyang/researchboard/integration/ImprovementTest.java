@@ -141,4 +141,10 @@ class ImprovementTest {
   var page=repo.results(run.runId(),0,10);assertEquals(1,page.items().size());
   assertEquals("발췌 있음",page.items().get(0).title());assertTrue(page.items().get(0).contentText().startsWith("추출한 본문"));assertEquals("SERPER_SCRAPE",page.items().get(0).extractionReason());
  }
+ @Test void internalClaimNumbersAreRemovedFromText(){
+  var snapshot=json.readTree("[{\"title\":\"A\",\"analysis\":{\"result_json\":\"{\\\"claims\\\":[{\\\"text\\\":\\\"a\\\",\\\"quote\\\":\\\"q\\\"}]}\"}}]");
+  var claims=BriefSynthesis.claims(snapshot,json);
+  var out=BriefSynthesis.normalize(json.readTree("{\"overview\":\"개요 (c0)\",\"common\":[],\"differences\":[{\"topic\":\"t\",\"text\":\"회심이 우선이다. (c0, c3, c6)\",\"claimIds\":[0]}],\"checks\":[]}"),claims,false);
+  assertEquals("개요",out.path("overview").asText());assertEquals("회심이 우선이다.",out.path("differences").get(0).path("text").asText());
+ }
 }
