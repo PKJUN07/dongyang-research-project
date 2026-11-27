@@ -125,6 +125,8 @@ public class AiController {
    result.put(id,state);
   }return result;
  }
+ /** 가장 최근에 만든 요약 모음 번호. 브라우저에 기억된 번호가 없을 때(다른 브라우저 등) 피드가 사용한다. */
+ @GetMapping("/briefs/latest") public Map<String,Object> latestBrief(){return db.read(c->{try(var r=c.createStatement().executeQuery("SELECT max(id) FROM topic_brief")){r.next();long id=r.getLong(1);if(r.wasNull())throw new ApiException(404,"BRIEF_NOT_FOUND","아직 만든 자료 요약 모음이 없습니다.");return Map.of("briefId",id);}});}
  @GetMapping("/briefs/{id}") public Map<String,Object> brief(@PathVariable long id){return db.read(c->{try(var p=c.prepareStatement("SELECT * FROM topic_brief WHERE id=?")){p.setLong(1,id);try(var r=p.executeQuery()){if(!r.next())throw new ApiException(404,"BRIEF_NOT_FOUND","자료 모음을 찾을 수 없습니다.");Map<String,Object> m=new LinkedHashMap<>();m.put("briefId",id);m.put("snapshot",json.readTree(r.getString("snapshot_json")));m.put("createdAt",r.getString("created_at"));m.put("question",r.getString("question"));m.put("synthesisStatus",r.getString("synthesis_status"));String syn=r.getString("synthesis_json");m.put("synthesis",syn==null?null:json.readTree(syn));m.put("synthesisError",r.getString("synthesis_error"));m.put("synthesisModel",r.getString("synthesis_model"));m.put("currentModel",model);return m;}}});}
  private boolean transition(long id,String status,String result,String error){return db.write(c->{try(var p=c.prepareStatement("UPDATE ai_job SET status=?,result_json=?,error_code=?,finished_at=? WHERE id=? AND status IN ('QUEUED','RUNNING')")){p.setString(1,status);p.setString(2,result);p.setString(3,error);p.setString(4,status.equals("RUNNING")?null:Instant.now().toString());p.setLong(5,id);return p.executeUpdate()>0;}});}
  public static void validate(JsonNode n,String input){

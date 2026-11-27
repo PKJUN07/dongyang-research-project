@@ -73,9 +73,16 @@ export function analysisCounts(data: AiJobs | undefined): AnalysisCounts | undef
 
 export type LastBrief = { briefId: number | null; query: UseQueryResult<Brief, Error> };
 
-/** localStorage에 기억한 마지막 자료 요약 모음(/brief와 같은 키 ['brief', id]). */
+/** 마지막 자료 요약 모음. 이 브라우저에 기억한 번호가 없으면 서버의 가장 최근 모음을 쓴다(/brief와 같은 키 ['brief', id]). */
 export function useLastBrief(): LastBrief {
-  const [briefId] = useState(() => lastBriefId());
+  const [remembered] = useState(() => lastBriefId());
+  const latest = useQuery({
+    queryKey: ['brief', 'latest'],
+    enabled: remembered === null,
+    queryFn: ({ signal }) => request<{ briefId: number }>('/ai/briefs/latest', undefined, signal),
+    retry: false,
+  });
+  const briefId = remembered ?? latest.data?.briefId ?? null;
   const query = useQuery({
     queryKey: ['brief', briefId],
     enabled: briefId !== null,
