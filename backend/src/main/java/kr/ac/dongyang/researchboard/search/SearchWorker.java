@@ -24,8 +24,8 @@ public class SearchWorker {
     public SearchWorker(SearchRepository repository,SearchProvider provider,DocumentService documents) { this(repository,provider,documents,null,null,0,false); }
     @Autowired
     public SearchWorker(SearchRepository repository,SearchProvider provider,DocumentService documents,SerperScraper scraper,SourcePolicy policy,
-            @Value("${research.serper-scrape-per-search:10}") int autoScrape,@Value("${research.public-fetch-enabled:true}") boolean publicFetch) {
-        this.repository=repository;this.provider=provider;this.documents=documents;this.scraper=scraper;this.policy=policy;this.autoScrape=Math.max(0,Math.min(30,autoScrape));this.publicFetch=publicFetch;
+            @Value("${research.serper-scrape-per-search:50}") int autoScrape,@Value("${research.public-fetch-enabled:true}") boolean publicFetch) {
+        this.repository=repository;this.provider=provider;this.documents=documents;this.scraper=scraper;this.policy=policy;this.autoScrape=Math.max(0,Math.min(50,autoScrape));this.publicFetch=publicFetch;
     }
     public void execute(long runId) {
         try {
