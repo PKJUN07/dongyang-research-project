@@ -6,8 +6,8 @@
 
 프로젝트 폴더에서 **`Start-ResearchBoard.bat`를 더블클릭**하세요. 실행기가 Ollama, 백엔드, 프론트엔드를 준비하고 기본 브라우저에서 [검색 화면](http://127.0.0.1:5179/search)을 엽니다. 이미 켜진 서비스는 재사용합니다.
 
-- **처음 실행할 때** GitHub에서 저장소 전체를 내려받으세요. ZIP으로 받았다면 압축을 푼 뒤 배치 파일을 실행하세요. 새로 내려받은 환경에는 JDK 21 이상과 Node.js 22.12 이상이 필요합니다. 첫 실행에는 프로젝트 의존성을 내려받느라 시간이 걸릴 수 있습니다.
-- **AI 요약을 쓸 때** Windows 또는 기본 WSL 배포판에 Ollama와 기본 모델 `qwen3-vl:8b-instruct`를 준비하세요. 다른 모델을 쓰려면 `RESEARCH_AI_MODEL`에 설치한 모델 이름을 지정하세요. Ollama를 사용할 수 없어도 검색·보관·메모는 쓸 수 있습니다.
+- **처음 실행할 때** GitHub에서 저장소 전체를 내려받으세요. ZIP으로 받았다면 압축을 푼 뒤 배치 파일을 실행하세요. 실행기가 JDK 21 이상, Node.js 22.12 이상, Ollama와 AI 모델을 확인하고, 없으면 winget으로 자동 설치합니다(이미 설치되어 있으면 확인만 합니다). 설치 중 관리자 권한(UAC) 확인 창이 뜰 수 있습니다. 첫 실행에는 프로그램·모델(수 GB)·프로젝트 의존성을 내려받느라 시간이 걸릴 수 있습니다.
+- **AI 요약을 쓸 때** 실행기가 Windows 또는 기본 WSL 배포판의 Ollama를 찾고, 없으면 Windows용 Ollama를 설치한 뒤 기본 모델 `qwen3-vl:8b-instruct`를 내려받습니다. 다른 모델을 쓰려면 `RESEARCH_AI_MODEL`에 설치한 모델 이름을 지정하세요. Ollama를 사용할 수 없어도 검색·보관·메모는 쓸 수 있습니다.
 - **사용을 마칠 때** 실행 창에서 **Enter**를 누르세요. 이 창이 시작한 서비스가 종료됩니다.
 
 ## 구성
@@ -37,7 +37,7 @@
 ## 실행 설정과 로그
 
 - 기본 DB는 `runtime/research.db`입니다. 다른 DB를 열려면 실행 전에 `RESEARCH_DB_PATH`에 해당 파일의 절대 경로를 지정하세요.
-- 프론트엔드는 설치된 Vite를 사용합니다. Vite가 없고 `frontend/dist`와 Python 3가 있으면 빌드 결과를 바로 띄웁니다. 그 외에는 `npm ci`로 패키지를 설치합니다.
+- 프론트엔드는 Vite로 띄우며, 패키지가 없으면 `npm ci`로 설치합니다. Node.js를 준비하지 못했을 때만 `frontend/dist`와 Python 3로 빌드 결과를 띄웁니다.
 - 서비스 시작에 실패하면 실행 창에 표시된 로그 파일을 확인하세요. 실행기가 시작한 서비스의 로그는 `runtime/Backend.log`, `runtime/Frontend.log`, `runtime/Ollama.log`에 기록됩니다.
 
 <details>
