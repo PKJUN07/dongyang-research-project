@@ -5,6 +5,7 @@ import { EmptyState, ErrorState, LoadingState } from '../../components/AsyncStat
 import { Card, Tag } from '../../components/ui';
 import type { TagTone } from '../../components/ui';
 import { formatKstDateTime } from '../../lib/format';
+import { DeleteRunButton } from './DeleteRunButton';
 import { errorLabel, providerLabel } from './statsData';
 
 const statusText: Record<string, string> = { QUEUED: '대기 중', RUNNING: '처리 중', SUCCEEDED: '완료', PARTIAL: '일부 본문 확인 불가', FAILED: '실패' };
@@ -33,6 +34,7 @@ function RunRow({ run }: { run: HistoryItem }) {
       {run.status === 'FAILED' && <p className="stats-run-note" role="status">검색이 완료되지 않았습니다. 기존에 보관한 자료와 메모는 그대로 이용할 수 있습니다. 사유: {errorLabel(run.errorCode)}</p>}
       <div className="stats-run-actions">
         {run.unique > 0 && <Link className="button-link-secondary stats-run-link" to={'/documents?runId=' + run.id}>이 검색의 자료 {run.unique}건 보기 →</Link>}
+        <DeleteRunButton runId={run.id} query={run.query.trim() || run.topic} active={run.status === 'QUEUED' || run.status === 'RUNNING'} />
         <details className="stats-details">
           <summary>집계 상세 보기</summary>
           <p>원시 수신 {run.raw ?? '미기록'} · 제외 {run.excluded ?? '미기록'} · 저장 처리한 유효 결과 {run.valid} · 확정 중복 {run.duplicates} · 본문 확인 불가 {run.bodyFailures}{run.errorCode ? ` · 오류 코드 ${run.errorCode}` : ''}</p>

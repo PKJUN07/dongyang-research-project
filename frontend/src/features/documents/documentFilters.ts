@@ -17,6 +17,7 @@ export function buildListFilters(params: URLSearchParams, { library = false }: {
   const filters = new URLSearchParams();
   filterKeys.forEach(key => { if (params.has(key)) filters.set(key, params.get(key)!); });
   if (!filters.has('sort')) filters.set('sort', 'FETCHED_DESC');
+  if (!filters.has('size')) filters.set('size', '10'); // 한 페이지 10건, 나머지는 페이지를 넘겨 본다.
   if (library) filters.set('saved', 'true');
   return filters;
 }

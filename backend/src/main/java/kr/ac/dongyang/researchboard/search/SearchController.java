@@ -18,4 +18,5 @@ public class SearchController {
     @GetMapping("/{id}/results") public SearchRepository.Page results(@PathVariable long id,@RequestParam java.util.Map<String,String> params) {
         return documents.findPage(DocumentFilter.parse(params),id);
     }
+    @DeleteMapping("/{id}") public SearchRepository.Deleted delete(@PathVariable long id) { return repository.delete(id); }
 }

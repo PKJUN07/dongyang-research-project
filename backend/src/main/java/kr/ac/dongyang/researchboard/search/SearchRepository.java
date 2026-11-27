@@ -148,4 +148,33 @@ public class SearchRepository {
             return null;
         });
     }
+
+    public record Deleted(long runId,int removedDocuments,int keptDocuments) {}
+    /** 이 검색에서만 나온 자료 중 사용자가 손대지 않은 자료(보관·즐겨찾기·나중에 읽기·읽기 상태·메모·AI 분석·다른 검색 없음). */
+    private static final String UNTOUCHED=" AND NOT EXISTS (SELECT 1 FROM search_hit o WHERE o.document_id=h.document_id AND o.run_id<>h.run_id)"
+        +" AND NOT EXISTS (SELECT 1 FROM user_note n WHERE n.document_id=h.document_id)"
+        +" AND NOT EXISTS (SELECT 1 FROM reading_state r WHERE r.document_id=h.document_id AND (r.saved=1 OR r.favorite=1 OR r.read_later=1 OR r.read_status<>'UNREAD'))"
+        +" AND NOT EXISTS (SELECT 1 FROM ai_job a WHERE a.document_id=h.document_id)";
+    /**
+     * 검색 이력 하나를 지운다. 그 검색에서만 나왔고 사용자가 손대지 않은 자료도 함께 지우고,
+     * 보관·메모·분석 등 사용자가 쓴 자료는 다른 화면에서 계속 볼 수 있게 남긴다. 진행 중인 검색은 지울 수 없다.
+     */
+    public Deleted delete(long id) {
+        return db.write(c -> {
+            try(var p=c.prepareStatement("SELECT status FROM search_run WHERE id=?")){p.setLong(1,id);try(var r=p.executeQuery()){
+                if(!r.next()) throw new ApiException(404,"RUN_NOT_FOUND","검색 작업을 찾을 수 없습니다.");
+                if(Set.of("QUEUED","RUNNING").contains(r.getString(1))) throw new ApiException(409,"RUN_ACTIVE","진행 중인 검색은 끝난 뒤에 삭제할 수 있습니다.");
+            }}
+            List<Long> remove=new ArrayList<>();int total;
+            try(var p=c.prepareStatement("SELECT count(*) FROM search_hit WHERE run_id=?")){p.setLong(1,id);try(var r=p.executeQuery()){r.next();total=r.getInt(1);}}
+            try(var p=c.prepareStatement("SELECT h.document_id FROM search_hit h WHERE h.run_id=?"+UNTOUCHED)){p.setLong(1,id);try(var r=p.executeQuery()){while(r.next())remove.add(r.getLong(1));}}
+            try(var p=c.prepareStatement("DELETE FROM search_hit WHERE run_id=?")){p.setLong(1,id);p.executeUpdate();}
+            String[] dependents={"DELETE FROM reading_state WHERE document_id=?","DELETE FROM document_topic WHERE document_id=?",
+                "DELETE FROM document_duplicate_candidate WHERE left_id=?1 OR right_id=?1","DELETE FROM document_url WHERE document_id=?",
+                "DELETE FROM document_identity WHERE document_id=?","DELETE FROM document WHERE id=?"};
+            for(String sql:dependents) try(var p=c.prepareStatement(sql)){for(long doc:remove){p.setLong(1,doc);p.addBatch();}p.executeBatch();}
+            try(var p=c.prepareStatement("DELETE FROM search_run WHERE id=?")){p.setLong(1,id);p.executeUpdate();}
+            return new Deleted(id,remove.size(),total-remove.size());
+        });
+    }
 }

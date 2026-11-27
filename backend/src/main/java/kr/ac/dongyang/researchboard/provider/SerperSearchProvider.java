@@ -24,7 +24,7 @@ public class SerperSearchProvider implements SearchProvider {
     public SerperSearchProvider(@Value("${research.serper-key:}") String key,
             @Value("${research.external-search-approved:false}") boolean approved,
             @Value("${research.max-provider-attempts:200}") int maxAttempts,
-            @Value("${research.serper-pages:3}") int pages,
+            @Value("${research.serper-pages:5}") int pages,
             SerperTransport transport,ProviderBudget budget) {
         this.key=key;this.approved=approved;this.maxAttempts=maxAttempts;this.pages=Math.max(1,Math.min(5,pages));this.transport=transport;this.budget=budget;
     }
@@ -51,7 +51,7 @@ public class SerperSearchProvider implements SearchProvider {
                 if(!seen.add(hit.url())) { excluded++;continue; }
                 hits.add(new Hit(hit.title(),hit.url(),hit.snippet(),hit.rank()+(page-1)*query.limit()));
             }
-            if(batch.rawCount()<query.limit()) break;
+            if(batch.rawCount()==0) break; // 국내 검색은 한 페이지가 10건을 다 채우지 않는 일이 잦아, 빈 페이지가 나올 때만 멈춘다.
         }
         return new Batch(hits,raw,excluded);
     }

@@ -20,7 +20,7 @@ class ImprovementTest {
  static class PagedTransport extends SerperTransport {
   final List<String> bodies=new ArrayList<>();final Deque<Response> scrapes=new ArrayDeque<>();
   public Response post(String key,String body){bodies.add(body);int page=bodies.size();
-   StringBuilder organic=new StringBuilder();int count=page<3?10:4;
+   StringBuilder organic=new StringBuilder();int count=page<3?10:page==3?4:0;
    for(int i=1;i<=count;i++){if(organic.length()>0)organic.append(',');organic.append("{\"link\":\"https://example.com/p").append(page).append('-').append(i).append("\",\"title\":\"t\",\"snippet\":\"s\",\"position\":").append(i).append('}');}
    if(page==2)organic.append(",{\"link\":\"https://example.com/p1-1\",\"position\":11}");
    return new Response(200,"{\"organic\":["+organic+"]}","");}
@@ -28,12 +28,12 @@ class ImprovementTest {
  }
  SearchProvider.Query query(){return new SearchProvider.Query("q","ko","kr",1,10);}
 
- @Test void searchFollowsSeveralPagesAndStopsOnShortPage(){
+ @Test void searchContinuesPastShortPagesUntilEmptyPage(){
   var budget=new ProviderBudget(new Database(dir.resolve("pages.db").toString()));var http=new PagedTransport();
   var batch=new SerperSearchProvider("key",true,100,5,http,budget).searchBatch(query());
-  assertEquals(3,http.bodies.size());assertTrue(http.bodies.get(1).contains("\"page\":2"));
+  assertEquals(4,http.bodies.size());assertTrue(http.bodies.get(1).contains("\"page\":2"));
   assertEquals(24,batch.hits().size());assertEquals(1,batch.excludedCount());
-  assertEquals(11,batch.hits().get(10).rank());assertEquals(3,budget.status().attempts());
+  assertEquals(11,batch.hits().get(10).rank());assertEquals(4,budget.status().attempts());
  }
  @Test void laterPagesStopQuietlyAtBudgetButFirstPageStillFails(){
   var db=new Database(dir.resolve("limit.db").toString());var http=new PagedTransport();
@@ -146,5 +146,19 @@ class ImprovementTest {
   var claims=BriefSynthesis.claims(snapshot,json);
   var out=BriefSynthesis.normalize(json.readTree("{\"overview\":\"개요 (c0)\",\"common\":[],\"differences\":[{\"topic\":\"t\",\"text\":\"회심이 우선이다. (c0, c3, c6)\",\"claimIds\":[0]}],\"checks\":[]}"),claims,false);
   assertEquals("개요",out.path("overview").asText());assertEquals("회심이 우선이다.",out.path("differences").get(0).path("text").asText());
+ }
+ @Test void deletingSearchHistoryKeepsDocumentsTheUserTouched(){
+  var db=new Database(dir.resolve("delete.db").toString());var repo=new SearchRepository(db);
+  db.write(c->{var s=c.createStatement();s.execute("INSERT INTO topic VALUES(1,'t','t','2026-11-10')");
+   s.execute("INSERT INTO search_run(id,topic_id,query,provider,locale,synthetic,request_key,status,started_at) VALUES(1,1,'지울 검색','SERPER','ko-KR',0,'a','SUCCEEDED','x'),(2,1,'남길 검색','SERPER','ko-KR',0,'b','SUCCEEDED','x'),(3,1,'진행','SERPER','ko-KR',0,'c','RUNNING','x')");
+   for(int i=1;i<=4;i++)s.execute("INSERT INTO document(id,original_url,normalized_url,title,synthetic) VALUES("+i+",'https://a.example.org/"+i+"','https://a.example.org/"+i+"','d',0)");
+   s.execute("INSERT INTO search_hit(run_id,document_id,rank,snippet,retrieved_at) VALUES(1,1,1,'s','x'),(1,2,2,'s','x'),(1,3,3,'s','x'),(2,3,1,'s','x'),(1,4,4,'s','x')");
+   s.execute("INSERT INTO document_topic(document_id,topic_id) VALUES(1,1),(2,1)");
+   s.execute("INSERT INTO reading_state(document_id,read_status,saved,favorite,read_later,updated_at) VALUES(2,'UNREAD',1,0,0,'x')");
+   s.execute("INSERT INTO ai_job(document_id,status,model,source_hash,input_type,input_text,created_at) VALUES(4,'SUCCEEDED','m','h','BODY','t','x')");return null;});
+  var deleted=repo.delete(1);assertEquals(1,deleted.removedDocuments());assertEquals(3,deleted.keptDocuments());
+  assertThrows(ApiException.class,()->repo.get(1));assertEquals(1,repo.results(2,0,10).totalElements());
+  long docs=db.read(c->{try(var r=c.createStatement().executeQuery("SELECT group_concat(id) FROM document")){r.next();return Long.valueOf(r.getString(1).replace(",",""));}});
+  assertEquals(234L,docs);assertThrows(ApiException.class,()->repo.delete(3));assertThrows(ApiException.class,()->repo.delete(99));
  }
 }

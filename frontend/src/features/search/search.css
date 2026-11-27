@@ -104,3 +104,7 @@
   .search-log-card { order: 5; }
   .search-kpi-grid { gap: 10px; }
 }
+.search-recent-item { display: flex; align-items: stretch; gap: 6px; }
+.search-recent-item .search-recent-link { flex: 1 1 auto; min-width: 0; }
+.search-recent-item .run-delete-error { align-self: center; }
+.search-recent-item .run-delete { flex: 0 0 auto; white-space: nowrap; padding: 8px 6px; }
